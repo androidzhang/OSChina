@@ -40,11 +40,13 @@ import net.oschina.app.bean.Result;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.ui.About;
+import net.oschina.app.ui.CaptureActivity;
 import net.oschina.app.ui.FeedBack;
 import net.oschina.app.ui.LoginDialog;
 import net.oschina.app.ui.QuestionPub;
 import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
+import net.oschina.app.ui.SoftwareLib;
 import net.oschina.app.ui.TweetPub;
 import net.oschina.app.ui.UserInfo;
 import net.oschina.app.widget.LinkView;
@@ -291,14 +293,14 @@ public class UIHelper {
 
     public static void showSoftware(MainActivity mainActivity) {
 
-//        Intent intent = new Intent(mainActivity, SoftwareLib.class);
-//        mainActivity.startActivity(intent);
+        Intent intent = new Intent(mainActivity, SoftwareLib.class);
+        mainActivity.startActivity(intent);
 
     }
 
     public static void showCapture(MainActivity mainActivity) {
-//        Intent intent = new Intent(mainActivity, CaptureActivity.class);
-//        mainActivity.startActivity(intent);
+        Intent intent = new Intent(mainActivity, CaptureActivity.class);
+        mainActivity.startActivity(intent);
 
     }
 

@@ -15,6 +15,7 @@ import net.oschina.app.AppException;
 import net.oschina.app.R;
 import net.oschina.app.api.ApiClient;
 import net.oschina.app.bean.ActiveList;
+import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.NewsList;
@@ -23,6 +24,8 @@ import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.SoftwareCatalogList;
+import net.oschina.app.bean.SoftwareList;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.User;
@@ -54,6 +57,7 @@ public class AppContext extends Application {
 
 
     public static final int PAGE_SIZE = 20;//默认分页大小
+    private static final int CACHE_TIME = 60*60000;//缓存失效时间
     private String saveImagePath;
     private boolean login = false;//用户是否登录
     private int loginUid = 0;    //登录用户的id
@@ -865,4 +869,127 @@ public class AppContext extends Application {
         return ApiClient.pubTweet(this, tweet);
     }
 
+    /**
+     * 软件分类列表
+     * @param tag 第一级:0  第二级:tag
+     * @return
+     * @throws AppException
+     */
+    public SoftwareCatalogList getSoftwareCatalogList(int tag) throws AppException {
+        SoftwareCatalogList list = null;
+        String key = "softwarecataloglist_"+tag;
+        if(isNetworkConnected() && isCacheDataFailure(key)) {
+            try{
+                list = ApiClient.getSoftwareCatalogList(this, tag);
+                if(list != null){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (SoftwareCatalogList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (SoftwareCatalogList)readObject(key);
+            if(list == null)
+                list = new SoftwareCatalogList();
+        }
+        return list;
+    }
+
+    /**
+     * 判断缓存是否失效
+     * @param cachefile
+     * @return
+     */
+    public boolean isCacheDataFailure(String cachefile)
+    {
+        boolean failure = false;
+        File data = getFileStreamPath(cachefile);
+        if(data.exists() && (System.currentTimeMillis() - data.lastModified()) > CACHE_TIME)
+            failure = true;
+        else if(!data.exists())
+            failure = true;
+        return failure;
+    }
+
+
+    /**
+     * 软件列表
+     * @param searchTag 软件分类  推荐:recommend 最新:time 热门:view 国产:list_cn
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public SoftwareList getSoftwareList(String searchTag, int pageIndex, boolean isRefresh) throws AppException {
+        SoftwareList list = null;
+        String key = "softwarelist_"+searchTag+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                list = ApiClient.getSoftwareList(this, searchTag, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (SoftwareList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (SoftwareList)readObject(key);
+            if(list == null)
+                list = new SoftwareList();
+        }
+        return list;
+    }
+    /**
+     * 软件分类的软件列表
+     * @param searchTag 从softwarecatalog_list获取的tag
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public SoftwareList getSoftwareTagList(int searchTag, int pageIndex, boolean isRefresh) throws AppException {
+        SoftwareList list = null;
+        String key = "softwaretaglist_"+searchTag+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (isCacheDataFailure(key) || isRefresh)) {
+            try{
+                list = ApiClient.getSoftwareTagList(this, searchTag, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (SoftwareList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (SoftwareList)readObject(key);
+            if(list == null)
+                list = new SoftwareList();
+        }
+        return list;
+    }
+
+    /**
+     * 扫描二维码签到
+     * @param barcode
+     * @return
+     * @throws AppException
+     */
+    public String signIn(Barcode barcode) throws AppException{
+        return ApiClient.signIn(this, barcode);
+    }
 }

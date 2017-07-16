@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import net.oschina.app.AppException;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.ActiveList;
+import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.NewsList;
@@ -14,6 +15,8 @@ import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.SoftwareCatalogList;
+import net.oschina.app.bean.SoftwareList;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.URLs;
@@ -715,5 +718,84 @@ public class ApiClient {
             throw AppException.network(e);
         }
     }
+    /**
+     * 软件分类列表
+     * @param tag 第一级:0  第二级:tag
+     * @return
+     * @throws AppException
+     */
+    public static SoftwareCatalogList getSoftwareCatalogList(AppContext appContext,final int tag) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("tag", tag);
 
+        try{
+            return SoftwareCatalogList.parse(_post(appContext, URLs.SOFTWARECATALOG_LIST, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 软件列表
+     * @param searchTag 软件分类  推荐:recommend 最新:time 热门:view 国产:list_cn
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static SoftwareList getSoftwareList(AppContext appContext,final String searchTag,final int pageIndex,final int pageSize) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("searchTag", searchTag);
+        params.put("pageIndex", pageIndex);
+        params.put("pageSize", pageSize);
+
+        try{
+            return SoftwareList.parse(_post(appContext, URLs.SOFTWARE_LIST, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+
+    /**
+     * 软件分类的软件列表
+     * @param searchTag 从softwarecatalog_list获取的tag
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static SoftwareList getSoftwareTagList(AppContext appContext,final int searchTag,final int pageIndex,final int pageSize) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("searchTag", searchTag);
+        params.put("pageIndex", pageIndex);
+        params.put("pageSize", pageSize);
+
+        try{
+            return SoftwareList.parse(_post(appContext, URLs.SOFTWARETAG_LIST, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+
+    /**
+     * 二维码扫描签到
+     * @param appContext
+     * @param barcode
+     * @return
+     * @throws AppException
+     */
+    public static String signIn(AppContext appContext, Barcode barcode) throws AppException {
+        try{
+            return StringUtils.toConvertString(http_get(appContext, barcode.getUrl()));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
 }
