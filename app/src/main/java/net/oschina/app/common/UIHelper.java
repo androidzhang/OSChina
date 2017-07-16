@@ -3,39 +3,56 @@ package net.oschina.app.common;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import net.oschina.app.MainActivity;
 import net.oschina.app.R;
+import net.oschina.app.adapter.GridViewFaceAdapter;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.Active;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.Notice;
+import net.oschina.app.bean.Result;
+import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.ui.About;
 import net.oschina.app.ui.FeedBack;
 import net.oschina.app.ui.LoginDialog;
+import net.oschina.app.ui.QuestionPub;
+import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
+import net.oschina.app.ui.TweetPub;
 import net.oschina.app.ui.UserInfo;
 import net.oschina.app.widget.LinkView;
 import net.oschina.app.widget.MyQuickAction;
 import net.oschina.app.widget.QuickAction;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 应用程序UI工具包：封装UI相关的一些操作
@@ -64,6 +81,11 @@ public class UIHelper {
 
     public final static int REQUEST_CODE_FOR_RESULT = 0x01;
     public final static int REQUEST_CODE_FOR_REPLY = 0x02;
+    /**
+     * 表情图片匹配
+     */
+    private static Pattern facePattern = Pattern
+            .compile("\\[{1}([0-9]\\d*)\\]{1}");
 
     /**
      * 弹出Toast消息
@@ -224,18 +246,28 @@ public class UIHelper {
      * @param context
      */
     public static void showSearch(Context context) {
-//        Intent intent = new Intent(context, Search.class);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, Search.class);
+        context.startActivity(intent);
     }
 
+    /**
+     * 显示我要提问页面
+     *
+     * @param context
+     */
     public static void showQuestionPub(Context context) {
-
-
+        Intent intent = new Intent(context, QuestionPub.class);
+        context.startActivity(intent);
     }
 
-    public static void showTweetPub(MainActivity mainActivity) {
-
-
+    /**
+     * 显示动弹一下页面
+     *
+     * @param context
+     */
+    public static void showTweetPub(Activity context) {
+        Intent intent = new Intent(context, TweetPub.class);
+        context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
     }
 
     /**
@@ -312,6 +344,7 @@ public class UIHelper {
 
     /**
      * url跳转
+     *
      * @param context
      * @param url
      */
@@ -324,6 +357,7 @@ public class UIHelper {
             openBrowser(context, url);
         }
     }
+
     public static void showLinkRedirect(Context context, int objType,
                                         int objId, String objKey) {
         switch (objType) {
@@ -353,8 +387,10 @@ public class UIHelper {
                 break;
         }
     }
+
     /**
      * 显示动弹详情及评论
+     *
      * @param context
      * @param tweetId
      */
@@ -366,6 +402,7 @@ public class UIHelper {
 
     /**
      * 显示用户动态
+     *
      * @param context
      * @param 。uid
      * @param hisuid
@@ -381,6 +418,7 @@ public class UIHelper {
 
     /**
      * 显示相关Tag帖子列表
+     *
      * @param context
      * @param tag
      */
@@ -409,6 +447,7 @@ public class UIHelper {
 
     /**
      * 显示博客详情
+     *
      * @param context
      * @param blogId
      */
@@ -420,6 +459,7 @@ public class UIHelper {
 
     /**
      * 显示帖子详情
+     *
      * @param context
      * @param postId
      */
@@ -460,8 +500,10 @@ public class UIHelper {
 //        intent.putExtra("img_url", imgUrl);
 //        context.startActivity(intent);
     }
+
     /**
      * 组合动态的动作文本
+     *
      * @param objecttype
      * @param objectcatalog
      * @param objecttitle
@@ -534,6 +576,7 @@ public class UIHelper {
 
     /**
      * 组合动态的回复文本
+     *
      * @param name
      * @param body
      * @return
@@ -547,13 +590,13 @@ public class UIHelper {
                 name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return sp;
     }
+
     /**
      * 动态点击跳转到相关新闻、帖子等
      *
      * @param context
      * @param /id
-     * @param /catalog
-     *            0其他 1新闻 2帖子 3动弹 4博客
+     * @param /catalog 0其他 1新闻 2帖子 3动弹 4博客
      */
     public static void showActiveRedirect(Context context, Active active) {
         String url = active.getUrl();
@@ -618,7 +661,7 @@ public class UIHelper {
         // style.clearSpans();// 这里会清除之前所有的样式
         for (URLSpan url : urls) {
             style.removeSpan(url);// 只需要移除之前的URL样式，再重新设置
-            LinkView.MyURLSpan myURLSpan =  view.new MyURLSpan(url.getURL());
+            LinkView.MyURLSpan myURLSpan = view.new MyURLSpan(url.getURL());
             style.setSpan(myURLSpan, span.getSpanStart(url),
                     span.getSpanEnd(url), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
@@ -644,6 +687,127 @@ public class UIHelper {
 //        intent.putExtra("friend_name", friendname);
 //        intent.putExtra("friend_id", friendid);
 //        context.startActivity(intent);
+    }
+
+    /**
+     * 获取TextWatcher对象
+     *
+     * @param context
+     * @param /tmlKey
+     * @return
+     */
+    public static TextWatcher getTextWatcher(final Activity context,
+                                             final String temlKey) {
+        return new TextWatcher() {
+            public void onTextChanged(CharSequence s, int start, int before,
+                                      int count) {
+                // 保存当前EditText正在编辑的内容
+                ((AppContext) context.getApplication()).setProperty(temlKey,
+                        s.toString());
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count,
+                                          int after) {
+            }
+
+            public void afterTextChanged(Editable s) {
+            }
+        };
+    }
+
+    /**
+     * 编辑器显示保存的草稿
+     *
+     * @param context
+     * @param editer
+     * @param temlKey
+     */
+    public static void showTempEditContent(Activity context, EditText editer,
+                                           String temlKey) {
+        String tempContent = ((AppContext) context.getApplication())
+                .getProperty(temlKey);
+        if (!StringUtils.isEmpty(tempContent)) {
+            SpannableStringBuilder builder = parseFaceByText(context,
+                    tempContent);
+            editer.setText(builder);
+            editer.setSelection(tempContent.length());// 设置光标位置
+        }
+    }
+
+    /**
+     * 将[12]之类的字符串替换为表情
+     *
+     * @param context
+     * @param content
+     */
+    public static SpannableStringBuilder parseFaceByText(Context context,
+                                                         String content) {
+        SpannableStringBuilder builder = new SpannableStringBuilder(content);
+        Matcher matcher = facePattern.matcher(content);
+        while (matcher.find()) {
+            // 使用正则表达式找出其中的数字
+            int position = StringUtils.toInt(matcher.group(1));
+            int resId = 0;
+            try {
+                if (position > 65 && position < 102)
+                    position = position - 1;
+                else if (position > 102)
+                    position = position - 2;
+                resId = GridViewFaceAdapter.getImageIds()[position];
+                Drawable d = context.getResources().getDrawable(resId);
+                d.setBounds(0, 0, 35, 35);// 设置表情图片的显示大小
+                ImageSpan span = new ImageSpan(d, ImageSpan.ALIGN_BOTTOM);
+                builder.setSpan(span, matcher.start(), matcher.end(),
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            } catch (Exception e) {
+            }
+        }
+        return builder;
+    }
+
+    /**
+     * 清除文字
+     * @param cont
+     * @param editer
+     */
+    public static void showClearWordsDialog(final Context cont,
+                                            final EditText editer, final TextView numwords) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(cont);
+        builder.setTitle(R.string.clearwords);
+        builder.setPositiveButton(R.string.sure,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        // 清除文字
+                        editer.setText("");
+                        numwords.setText("160");
+                    }
+                });
+        builder.setNegativeButton(R.string.cancle,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        builder.show();
+    }
+    /**
+     * 发送广播-发布动弹
+     *
+     * @param context
+     * @param 、notice
+     */
+    public static void sendBroadCastTweet(Context context, int what,
+                                          Result res, Tweet tweet) {
+        if (res == null && tweet == null)
+            return;
+        Intent intent = new Intent("net.oschina.app.action.APP_TWEETPUB");
+        intent.putExtra("MSG_WHAT", what);
+        if (what == 1)
+            intent.putExtra("RESULT", res);
+        else
+            intent.putExtra("TWEET", tweet);
+        context.sendBroadcast(intent);
     }
     /**
      * 显示路径选择对话框

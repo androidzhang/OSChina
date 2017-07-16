@@ -19,8 +19,11 @@ import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
+import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Result;
+import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.User;
 import net.oschina.app.common.CyptoUtils;
@@ -826,6 +829,40 @@ public class AppContext extends Application {
      */
     public Notice getUserNotice(int uid) throws AppException {
         return ApiClient.getUserNotice(this, uid);
+    }
+
+    /**
+     * 获取搜索列表
+     * @param catalog 全部:all 新闻:news  问答:post 软件:software 博客:blog 代码:code
+     * @param content 搜索的内容
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public SearchList getSearchList(String catalog, String content, int pageIndex, int pageSize) throws AppException {
+        return ApiClient.getSearchList(this, catalog, content, pageIndex, pageSize);
+    }
+
+    /**
+     * 发帖子
+     * @param post （uid、title、catalog、content、isNoticeMe）
+     * @return
+     * @throws AppException
+     */
+    public Result pubPost(Post post) throws AppException {
+        return ApiClient.pubPost(this, post);
+    }
+
+
+    /**
+     * 发动弹
+     * @param 、Tweet-uid & msg & image
+     * @return
+     * @throws AppException
+     */
+    public Result pubTweet(Tweet tweet) throws AppException {
+        return ApiClient.pubTweet(this, tweet);
     }
 
 }

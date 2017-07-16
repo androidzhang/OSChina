@@ -253,4 +253,7 @@
         <item name="android:layout_marginRight">6.0dip</item>
         <item name="android:background">@mipmap/line_bluegray</item>
     </style>
-</resources>
+
+    <style name="tweet_largeCustomProgressBar" parent="@android:style/Widget.ProgressBar">
+        <item name="android:indeterminateDrawable">@drawable/tweet_custom_loading</item>
+    </style></resources>

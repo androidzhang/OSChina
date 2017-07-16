@@ -178,4 +178,18 @@ public class FileUtils {
             }
         }
     }
+
+    /**
+     * 获取文件扩展名
+     *
+     * @param fileName
+     * @return
+     */
+    public static String getFileFormat(String fileName) {
+        if (StringUtils.isEmpty(fileName))
+            return "";
+
+        int point = fileName.lastIndexOf('.');
+        return fileName.substring(point + 1);
+    }
 }

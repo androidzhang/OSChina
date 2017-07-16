@@ -50,7 +50,13 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Preference" />
-
+        <activity
+            android:name=".ui.Search"
+            android:configChanges="keyboardHidden|orientation"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ZoomLight"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
         <activity
             android:name=".ui.About"
             android:configChanges="keyboardHidden|orientation"
@@ -72,6 +78,20 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.ZoomLight" />
 
+
+        <activity
+            android:name=".ui.QuestionPub"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ZoomLight"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
+
+        <activity
+            android:name=".ui.TweetPub"
+            android:configChanges="keyboardHidden|orientation"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ZoomLight"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
     </application>
 
 </manifest>

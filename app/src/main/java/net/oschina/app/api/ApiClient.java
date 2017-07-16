@@ -10,8 +10,11 @@ import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
+import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Result;
+import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.bean.Update;
@@ -627,4 +630,90 @@ public class ApiClient {
             throw AppException.network(e);
         }
     }
+    /**
+     * 获取搜索列表
+     * @param catalog 全部:all 新闻:news  问答:post 软件:software 博客:blog 代码:code
+     * @param content 搜索的内容
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static SearchList getSearchList(AppContext appContext, String catalog, String content, int pageIndex, int pageSize) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("catalog", catalog);
+        params.put("content", content);
+        params.put("pageIndex", pageIndex);
+        params.put("pageSize", pageSize);
+
+        try{
+            return SearchList.parse(_post(appContext, URLs.SEARCH_LIST, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 发帖子
+     * @param post （uid、title、catalog、content、isNoticeMe）
+     * @return
+     * @throws AppException
+     */
+    public static Result pubPost(AppContext appContext, Post post) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", post.getAuthorId());
+        params.put("title", post.getTitle());
+        params.put("catalog", post.getCatalog());
+        params.put("content", post.getBody());
+        params.put("isNoticeMe", post.getIsNoticeMe());
+
+        try{
+            return http_post(appContext, URLs.POST_PUB, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+
+    /**
+     * post请求URL
+     * @param url
+     * @param params
+     * @param files
+     * @throws AppException
+     * @throws IOException
+     * @throws
+     */
+    private static Result http_post(AppContext appContext, String url, Map<String, Object> params, Map<String,File> files) throws AppException, IOException {
+        return Result.parse(_post(appContext, url, params, files));
+    }
+
+    /**
+     * 发动弹
+     * @param 、Tweet-uid & msg & image
+     * @return
+     * @throws AppException
+     */
+    public static Result pubTweet(AppContext appContext, Tweet tweet) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", tweet.getAuthorId());
+        params.put("msg", tweet.getBody());
+
+        Map<String, File> files = new HashMap<String, File>();
+        if(tweet.getImageFile() != null)
+            files.put("img", tweet.getImageFile());
+        if (tweet.getAmrFile() != null)
+            files.put("amr", tweet.getAmrFile());
+
+        try{
+            return http_post(appContext, URLs.TWEET_PUB, params, files);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+
 }

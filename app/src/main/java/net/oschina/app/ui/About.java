@@ -8,13 +8,13 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import net.oschina.app.R;
+import net.oschina.app.common.UpdateManager;
 
 /**
  * Created by zlx on 2017/7/14.
  */
 
 public class About  extends BaseActivity{
-
 
     private TextView mVersion;
     private Button mUpdate;
@@ -34,7 +34,7 @@ public class About  extends BaseActivity{
         mUpdate = (Button)findViewById(R.id.about_update);
         mUpdate.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-//                UpdateManager.getUpdateManager().checkAppUpdate(About.this, true);
+                UpdateManager.getUpdateManager().checkAppUpdate(About.this, true);
             }
         });
     }
