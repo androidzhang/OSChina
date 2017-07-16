@@ -177,17 +177,13 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         appContext = (AppContext) getApplication();
-
         clickExitHelper = new DoubleClickExitHelper(this);
         // 注册广播接收器
         tweetReceiver = new TweetReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction("net.oschina.app.action.APP_TWEETPUB");
         registerReceiver(tweetReceiver, filter);
-
-
         // 网络连接判断
         if (!appContext.isNetworkConnected())
             UIHelper.ToastMessage(this, R.string.network_not_connected);
@@ -219,7 +215,7 @@ public class MainActivity extends BaseActivity {
             return;
         }
         // 启动线程去检查服务器接口是否需要下载新的欢迎界面背景图片到手机
-        new Thread(){
+        new Thread() {
             public void run() {
                 // 将图片下载下来
                 try {
@@ -229,6 +225,7 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
+
     /**
      * 轮询通知信息
      */
@@ -412,10 +409,8 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
-
     /**
      * 通知信息处理
-     *
      * @param type 1:@我的信息 2:未读消息 3:评论个数 4:新粉丝个数
      */
     private void ClearNotice(final int type) {
@@ -844,6 +839,7 @@ public class MainActivity extends BaseActivity {
                             UIHelper.LISTVIEW_ACTION_SCROLL);
                 }
             }
+
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 lvNews.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
@@ -859,6 +855,7 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+
     private void initQuickActionGrid() {
         mGrid = new QuickActionGrid(this);
         mGrid.addQuickAction(new MyQuickAction(this, R.mipmap.ic_menu_login,
@@ -995,6 +992,7 @@ public class MainActivity extends BaseActivity {
                 + getString(R.string.frame_title_active_atme));
 
     }
+
     private View.OnClickListener frameActiveBtnClick(final Button btn,
                                                      final int catalog) {
         return new View.OnClickListener() {
@@ -1075,8 +1073,7 @@ public class MainActivity extends BaseActivity {
     /**
      * 线程加载留言数据
      *
-     * @param pageIndex
-     *            当前页数
+     * @param pageIndex 当前页数
      * @param handler
      * @param action
      */
@@ -1106,7 +1103,6 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
 
 
     private View.OnClickListener frameTweetBtnClick(final Button btn,
@@ -1165,17 +1161,14 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
+
     /**
      * 线程加载帖子数据
      *
-     * @param catalog
-     *            分类
-     * @param pageIndex
-     *            当前页数
-     * @param handler
-     *            处理器
-     * @param action
-     *            动作标识
+     * @param catalog   分类
+     * @param pageIndex 当前页数
+     * @param handler   处理器
+     * @param action    动作标识
      */
     private void loadLvQuestionData(final int catalog, final int pageIndex,
                                     final Handler handler, final int action) {
@@ -1245,17 +1238,14 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
+
     /**
      * 线程加载博客数据
      *
-     * @param catalog
-     *            分类
-     * @param pageIndex
-     *            当前页数
-     * @param handler
-     *            处理器
-     * @param action
-     *            动作标识
+     * @param catalog   分类
+     * @param pageIndex 当前页数
+     * @param handler   处理器
+     * @param action    动作标识
      */
     private void loadLvBlogData(final int catalog, final int pageIndex,
                                 final Handler handler, final int action) {
@@ -1314,6 +1304,7 @@ public class MainActivity extends BaseActivity {
 
 
     }
+
     /**
      * 初始化水平滚动翻页
      */
