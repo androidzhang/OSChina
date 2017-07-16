@@ -1,10 +1,12 @@
 package net.oschina.app.common;
 
 import android.content.Context;
+import android.os.Environment;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件操作工具包
@@ -74,5 +76,106 @@ public class FileUtils {
         return allDir;
 
 
+    }
+
+    /**
+     * 检查是否安装SD卡
+     *
+     * @return
+     */
+    public static boolean checkSaveLocationExists() {
+        String sDCardStatus = Environment.getExternalStorageState();
+        boolean status;
+        if (sDCardStatus.equals(Environment.MEDIA_MOUNTED)) {
+            status = true;
+        } else
+            status = false;
+        return status;
+    }
+    /**
+     * 检查是否安装外置的SD卡
+     *
+     * @return
+     */
+    public static boolean checkExternalSDExists() {
+        Map<String, String> evn = System.getenv();
+        return evn.containsKey("SECONDARY_STORAGE");
+    }
+
+
+    /**
+     * 获取目录文件大小
+     * @param dir
+     * @return
+     */
+    public static long getDirSize(File dir) {
+        if (dir == null) {
+            return 0;
+        }
+        if (!dir.isDirectory()) {
+            return 0;
+        }
+        long dirSize = 0;
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isFile()) {
+                dirSize += file.length();
+            } else if (file.isDirectory()) {
+                dirSize += file.length();
+                dirSize += getDirSize(file); // 递归调用继续统计
+            }
+        }
+        return dirSize;
+    }
+    /**
+     * 转换文件大小
+     *
+     * @param fileS
+     * @return B/KB/MB/GB
+     */
+    public static String formatFileSize(long fileS) {
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#.00");
+        String fileSizeString = "";
+        if (fileS < 1024) {
+            fileSizeString = df.format((double) fileS) + "B";
+        } else if (fileS < 1048576) {
+            fileSizeString = df.format((double) fileS / 1024) + "KB";
+        } else if (fileS < 1073741824) {
+            fileSizeString = df.format((double) fileS / 1048576) + "MB";
+        } else {
+            fileSizeString = df.format((double) fileS / 1073741824) + "G";
+        }
+        return fileSizeString;
+    }
+
+
+    /**
+     * 根据文件绝对路径获取文件名
+     *
+     * @param filePath
+     * @return
+     */
+    public static String getFileName(String filePath) {
+        if (StringUtils.isEmpty(filePath))
+            return "";
+        return filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+    }
+
+    /**
+     * 清空一个文件夹
+     * @param /files
+     */
+    public static void clearFileWithPath(String filePath) {
+        List<File> files = FileUtils.listPathFiles(filePath);
+        if (files.isEmpty()) {
+            return;
+        }
+        for (File f : files) {
+            if (f.isDirectory()) {
+                clearFileWithPath(f.getAbsolutePath());
+            } else {
+                f.delete();
+            }
+        }
     }
 }
