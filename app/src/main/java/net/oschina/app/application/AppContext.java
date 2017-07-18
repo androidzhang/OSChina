@@ -17,6 +17,7 @@ import net.oschina.app.api.ApiClient;
 import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
+import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.NewsList;
@@ -1074,6 +1075,40 @@ public class AppContext extends Application {
      */
     public Result delFavorite(int uid, int objid, int type) throws AppException {
         return ApiClient.delFavorite(this, uid, objid, type);
+    }
+    
+    public CommentList getCommentList(int catalog, int id, int pageIndex, boolean isRefresh) throws AppException {
+        CommentList list = null;
+        String key = "commentlist_"+catalog+"_"+id+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                list = ApiClient.getCommentList(this, catalog, id, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (CommentList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (CommentList)readObject(key);
+            if(list == null)
+                list = new CommentList();
+        }
+        return list;
+    }
+    
+    public Result pubComment(int catalog, int id, int uid, String content, int isPostToMyZone) throws AppException {
+        return ApiClient.pubComment(this, catalog, id, uid, content, isPostToMyZone);
+    }
+    
+    public Result addFavorite(int uid, int objid, int type) throws AppException {
+        return ApiClient.addFavorite(this, uid, objid, type);
     }
     
 }

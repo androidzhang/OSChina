@@ -41,6 +41,8 @@ import net.oschina.app.adapter.GridViewFaceAdapter;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.AccessInfo;
 import net.oschina.app.bean.Active;
+import net.oschina.app.bean.CommentList;
+import net.oschina.app.bean.CommentPub;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Result;
@@ -997,6 +999,32 @@ public class UIHelper {
             context.getWindow().addContentView(screenShot, lp);
         }
     }
+    
+    public static void showCommentReply(Activity context, int id, int catalog,
+                                        int replyid, int authorid, String author, String content) {
+        Intent intent = new Intent(context, CommentPub.class);
+        intent.putExtra("id", id);
+        intent.putExtra("catalog", catalog);
+        intent.putExtra("reply_id", replyid);
+        intent.putExtra("author_id", authorid);
+        intent.putExtra("author", author);
+        intent.putExtra("content", content);
+        if (catalog == CommentList.CATALOG_POST)
+            context.startActivityForResult(intent, REQUEST_CODE_FOR_REPLY);
+        else
+            context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
+    }
+    
+    public static SpannableString parseQuoteSpan(String name, String body) {
+        SpannableString sp = new SpannableString("回复：" + name + "\n" + body);
+        // 设置用户名字体加粗、高亮
+        sp.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 3,
+                3 + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        sp.setSpan(new ForegroundColorSpan(Color.parseColor("#0e5986")), 3,
+                3 + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return sp;
+    }
+    
     
     /**
      * 显示路径选择对话框
