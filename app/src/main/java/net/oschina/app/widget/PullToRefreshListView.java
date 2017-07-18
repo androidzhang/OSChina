@@ -16,7 +16,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import net.oschina.app.R;
 
 /**
  * 下拉刷新控件

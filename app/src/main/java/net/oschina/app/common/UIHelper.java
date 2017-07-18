@@ -2,9 +2,11 @@ package net.oschina.app.common;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -25,14 +27,19 @@ import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.oschina.app.AppConfig;
 import net.oschina.app.MainActivity;
 import net.oschina.app.R;
 import net.oschina.app.adapter.GridViewFaceAdapter;
 import net.oschina.app.application.AppContext;
+import net.oschina.app.bean.AccessInfo;
 import net.oschina.app.bean.Active;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.Notice;
@@ -40,10 +47,14 @@ import net.oschina.app.bean.Result;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.ui.About;
+import net.oschina.app.ui.BaseActivity;
 import net.oschina.app.ui.CaptureActivity;
 import net.oschina.app.ui.FeedBack;
+import net.oschina.app.ui.ImageZoomDialog;
 import net.oschina.app.ui.LoginDialog;
+import net.oschina.app.ui.NewsDetail;
 import net.oschina.app.ui.QuestionPub;
+import net.oschina.app.ui.ScreenShotShare;
 import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
 import net.oschina.app.ui.SoftwareLib;
@@ -52,7 +63,9 @@ import net.oschina.app.ui.UserInfo;
 import net.oschina.app.widget.LinkView;
 import net.oschina.app.widget.MyQuickAction;
 import net.oschina.app.widget.QuickAction;
+import net.oschina.app.widget.ScreenShotView;
 
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,6 +96,16 @@ public class UIHelper {
 
     public final static int REQUEST_CODE_FOR_RESULT = 0x01;
     public final static int REQUEST_CODE_FOR_REPLY = 0x02;
+    // 链接样式文件，代码块高亮的处理
+    public final static String linkCss = "<script type=\"text/javascript\" src=\"file:///android_asset/shCore.js\"></script>"
+            + "<script type=\"text/javascript\" src=\"file:///android_asset/brush.js\"></script>"
+            + "<link rel=\"stylesheet\" type=\"text/css\" href=\"file:///android_asset/shThemeDefault.css\">"
+            + "<link rel=\"stylesheet\" type=\"text/css\" href=\"file:///android_asset/shCore.css\">"
+            + "<script type=\"text/javascript\">SyntaxHighlighter.all();</script>";
+    public final static String WEB_STYLE = linkCss + "<style>* {font-size:14px;line-height:20px;} p {color:#333;} a {color:#3E62A6;} img {max-width:310px;} "
+            + "img.alignleft {float:left;max-width:120px;margin:0 10px 5px 0;border:1px solid #ccc;background:#fff;padding:2px;} "
+            + "pre {font-size:9pt;line-height:12pt;font-family:Courier New,Arial;border:1px solid #ddd;border-left:5px solid #6CE26C;background:#f6f6f6;padding:5px;overflow: auto;} "
+            + "a.tag {font-size:15px;text-decoration:none;background-color:#bbd6f3;border-bottom:2px solid #3E6D8E;border-right:2px solid #7F9FB6;color:#284a7b;margin:2px 2px 2px 0;padding:2px 4px;white-space:nowrap;}</style>";
     /**
      * 表情图片匹配
      */
@@ -492,15 +515,15 @@ public class UIHelper {
      * @param newsId
      */
     public static void showNewsDetail(Context context, int newsId) {
-//        Intent intent = new Intent(context, NewsDetail.class);
-//        intent.putExtra("news_id", newsId);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, NewsDetail.class);
+        intent.putExtra("news_id", newsId);
+        context.startActivity(intent);
     }
 
     public static void showImageZoomDialog(Context context, String imgUrl) {
-//        Intent intent = new Intent(context, ImageZoomDialog.class);
-//        intent.putExtra("img_url", imgUrl);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, ImageZoomDialog.class);
+        intent.putExtra("img_url", imgUrl);
+        context.startActivity(intent);
     }
 
     /**
@@ -811,6 +834,170 @@ public class UIHelper {
             intent.putExtra("TWEET", tweet);
         context.sendBroadcast(intent);
     }
+    
+    /**
+     * 添加网页的点击图片展示支持
+     */
+    @SuppressLint({ "SetJavaScriptEnabled", "JavascriptInterface" })
+    public static void addWebImageShow(final Context cxt, WebView wv) {
+        wv.getSettings().setJavaScriptEnabled(true);
+        wv.addJavascriptInterface(new OnWebViewImageListener() {
+            
+            @Override
+            public void onImageClick(String bigImageUrl) {
+                if (bigImageUrl != null)
+                    UIHelper.showImageZoomDialog(cxt, bigImageUrl);
+            }
+        }, "mWebViewImageListener");
+    }
+    /**
+     * 获取webviewClient对象
+     *
+     * @return
+     */
+    public static WebViewClient getWebViewClient() {
+        return new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                showUrlRedirect(view.getContext(), url);
+                return true;
+            }
+        };
+    }
+    /**
+     * 显示首页
+     *
+     * @param activity
+     */
+    public static void showHome(Activity activity) {
+        Intent intent = new Intent(activity, MainActivity.class);
+        activity.startActivity(intent);
+        activity.finish();
+    }
+    
+    /**
+     * 分享到'新浪微博'或'腾讯微博'的对话框
+     *
+     * @param context
+     *            当前Activity
+     * @param title
+     *            分享的标题
+     * @param url
+     *            分享的链接
+     */
+    public static void showShareDialog(final Activity context,
+                                       final String title, final String url) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(android.R.drawable.btn_star);
+        builder.setTitle(context.getString(R.string.share));
+        builder.setItems(R.array.app_share_items,
+                new DialogInterface.OnClickListener() {
+                    AppConfig cfgHelper = AppConfig.getAppConfig(context);
+                    AccessInfo access = cfgHelper.getAccessInfo();
+                    
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        switch (arg1) {
+                            case 0:// 新浪微博
+                                // 分享的内容
+                                final String shareMessage = title + " " + url;
+                                // 初始化微博
+                                if (SinaWeiboHelper.isWeiboNull()) {
+                                    SinaWeiboHelper.initWeibo();
+                                }
+                                // 判断之前是否登陆过
+                                if (access != null) {
+                                    SinaWeiboHelper.progressDialog = new ProgressDialog(
+                                            context);
+                                    SinaWeiboHelper.progressDialog
+                                            .setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                                    SinaWeiboHelper.progressDialog
+                                            .setMessage(context
+                                                    .getString(R.string.sharing));
+                                    SinaWeiboHelper.progressDialog
+                                            .setCancelable(true);
+                                    SinaWeiboHelper.progressDialog.show();
+                                    new Thread() {
+                                        public void run() {
+                                            SinaWeiboHelper.setAccessToken(
+                                                    access.getAccessToken(),
+                                                    access.getAccessSecret(),
+                                                    access.getExpiresIn());
+                                            SinaWeiboHelper.shareMessage(context,
+                                                    shareMessage);
+                                        }
+                                    }.start();
+                                } else {
+                                    SinaWeiboHelper
+                                            .authorize(context, shareMessage);
+                                }
+                                break;
+                            case 1:// 腾讯微博
+                                QQWeiboHelper.shareToQQ(context, title, url);
+                                break;
+                            case 2:// 微信朋友圈
+                                WXFriendsHelper.shareToWXFriends(context, title, url);
+                                break;
+                            case 3:// 截图分享
+                                addScreenShot(context, new ScreenShotView.OnScreenShotListener() {
+                                    
+                                    @SuppressLint("NewApi")
+                                    public void onComplete(Bitmap bm) {
+                                        Intent intent = new Intent(context,ScreenShotShare.class);
+                                        intent.putExtra("title", title);
+                                        intent.putExtra("url", url);
+                                        intent.putExtra("cut_image_tmp_path", ScreenShotView.TEMP_SHARE_FILE_NAME);
+                                        try {
+                                            ImageUtils.saveImageToSD(context,ScreenShotView.TEMP_SHARE_FILE_NAME,bm, 100);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        context.startActivity(intent);
+                                    }
+                                });
+                                break;
+                            case 4:// 更多
+                                showShareMore(context, title, url);
+                                break;
+                        }
+                    }
+                });
+        builder.create().show();
+    }
+    
+    /**
+     * 调用系统安装了的应用分享
+     *
+     * @param context
+     * @param title
+     * @param url
+     */
+    public static void showShareMore(Activity context, final String title,
+                                     final String url) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "分享：" + title);
+        intent.putExtra(Intent.EXTRA_TEXT, title + " " + url);
+        context.startActivity(Intent.createChooser(intent, "选择分享"));
+    }
+    
+    /**
+     * 添加截屏功能
+     */
+    @SuppressLint("NewApi")
+    public static void addScreenShot(Activity context,
+                                     ScreenShotView.OnScreenShotListener mScreenShotListener) {
+        BaseActivity cxt = null;
+        if (context instanceof BaseActivity) {
+            cxt = (BaseActivity) context;
+            cxt.setAllowFullScreen(false);
+            ScreenShotView screenShot = new ScreenShotView(cxt,
+                    mScreenShotListener);
+            ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            context.getWindow().addContentView(screenShot, lp);
+        }
+    }
+    
     /**
      * 显示路径选择对话框
      *

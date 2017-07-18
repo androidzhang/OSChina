@@ -9,6 +9,7 @@ import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
+import net.oschina.app.bean.News;
 import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Post;
@@ -792,6 +793,49 @@ public class ApiClient {
     public static String signIn(AppContext appContext, Barcode barcode) throws AppException {
         try{
             return StringUtils.toConvertString(http_get(appContext, barcode.getUrl()));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取资讯的详情
+     * @param 、url
+     * @param news_id
+     * @return
+     * @throws AppException
+     */
+    public static News getNewsDetail(AppContext appContext, final int news_id) throws AppException {
+        String newUrl = _MakeURL(URLs.NEWS_DETAIL, new HashMap<String, Object>(){{
+            put("id", news_id);
+        }});
+        
+        try{
+            return News.parse(http_get(appContext, newUrl));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 用户删除收藏
+     * @param uid 用户UID
+     * @param objid 比如是新闻ID 或者问答ID 或者动弹ID
+     * @param type 1:软件 2:话题 3:博客 4:新闻 5:代码
+     * @return
+     * @throws AppException
+     */
+    public static Result delFavorite(AppContext appContext, int uid, int objid, int type) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", uid);
+        params.put("objid", objid);
+        params.put("type", type);
+        
+        try{
+            return http_post(appContext, URLs.FAVORITE_DELETE, params, null);
         }catch(Exception e){
             if(e instanceof AppException)
                 throw (AppException)e;

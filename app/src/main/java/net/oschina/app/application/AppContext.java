@@ -18,6 +18,7 @@ import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.MessageList;
+import net.oschina.app.bean.News;
 import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Post;
@@ -54,41 +55,44 @@ import static android.nfc.tech.MifareUltralight.PAGE_SIZE;
  */
 
 public class AppContext extends Application {
-
-
+    
+    
     public static final int PAGE_SIZE = 20;//默认分页大小
-    private static final int CACHE_TIME = 60*60000;//缓存失效时间
+    private static final int CACHE_TIME = 60 * 60000;//缓存失效时间
+    public static final int NETTYPE_WIFI = 0x01;
+    public static final int NETTYPE_CMNET = 0x03;
+    public static final int NETTYPE_CMWAP = 0x02;
+    
     private String saveImagePath;
     private boolean login = false;//用户是否登录
     private int loginUid = 0;    //登录用户的id
     private Handler unLoginHandler = new Handler() {
-
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-
-
+            
+            
             if (msg.what == 1) {
-
+                
                 UIHelper.ToastMessage(AppContext.this, getString(R.string.msg_login_error));
                 UIHelper.showLoginDialog(AppContext.this);
             }
-
-
+            
+            
         }
     };
-
+    
     @Override
     public void onCreate() {
         super.onCreate();
         //注册App异常崩溃处理器
         Thread.setDefaultUncaughtExceptionHandler(AppException.getAppExceptionHandler());
-
+        
         init();
-
-
+        
+        
     }
-
+    
     /**
      * 初始化
      */
@@ -96,40 +100,40 @@ public class AppContext extends Application {
         //设置保存图片的路径
         saveImagePath = getProperty(AppConfig.SAVE_IMAGE_PATH);
         if (StringUtils.isEmpty(saveImagePath)) {
-
+            
             setProperty(AppConfig.SAVE_IMAGE_PATH, AppConfig.DEFAULT_SAVE_IMAGE_PATH);
             saveImagePath = AppConfig.DEFAULT_SAVE_IMAGE_PATH;
         }
-
-
+        
+        
     }
-
-
+    
+    
     public boolean containsProperty(String key) {
         Properties props = getProperties();
         return props.containsKey(key);
     }
-
+    
     public void setProperties(Properties ps) {
         AppConfig.getAppConfig(this).set(ps);
     }
-
+    
     public Properties getProperties() {
         return AppConfig.getAppConfig(this).get();
     }
-
+    
     public void setProperty(String key, String value) {
         AppConfig.getAppConfig(this).set(key, value);
     }
-
+    
     public String getProperty(String key) {
         return AppConfig.getAppConfig(this).get(key);
     }
-
+    
     public void removeProperty(String... key) {
         AppConfig.getAppConfig(this).remove(key);
     }
-
+    
     /**
      * 获取App安装包信息
      *
@@ -145,7 +149,7 @@ public class AppContext extends Application {
         if (info == null) info = new PackageInfo();
         return info;
     }
-
+    
     /**
      * 用户是否登录
      *
@@ -154,7 +158,7 @@ public class AppContext extends Application {
     public boolean isLogin() {
         return login;
     }
-
+    
     /**
      * 动弹列表
      *
@@ -188,7 +192,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     /**
      * 保存对象
      *
@@ -219,8 +223,8 @@ public class AppContext extends Application {
             }
         }
     }
-
-
+    
+    
     /**
      * 判断缓存数据是否可读
      *
@@ -230,7 +234,7 @@ public class AppContext extends Application {
     private boolean isReadDataCache(String cachefile) {
         return readObject(cachefile) != null;
     }
-
+    
     /**
      * 读取对象
      *
@@ -267,7 +271,7 @@ public class AppContext extends Application {
         }
         return null;
     }
-
+    
     /**
      * 判断缓存是否存在
      *
@@ -281,7 +285,7 @@ public class AppContext extends Application {
             exist = true;
         return exist;
     }
-
+    
     /**
      * 检测网络是否可用
      *
@@ -292,7 +296,7 @@ public class AppContext extends Application {
         NetworkInfo ni = cm.getActiveNetworkInfo();
         return ni != null && ni.isConnectedOrConnecting();
     }
-
+    
     /**
      * 用户注销
      */
@@ -302,22 +306,22 @@ public class AppContext extends Application {
         this.login = false;
         this.loginUid = 0;
     }
-
+    
     /**
      * 清除保存的缓存
      */
     public void cleanCookie() {
         removeProperty(AppConfig.CONF_COOKIE);
     }
-
-
+    
+    
     /**
      * 未登录或修改密码后的处理
      */
     public Handler getUnLoginHandler() {
         return this.unLoginHandler;
     }
-
+    
     /**
      * 获取App唯一标识
      *
@@ -331,7 +335,7 @@ public class AppContext extends Application {
         }
         return uniqueID;
     }
-
+    
     /**
      * 获取内存中保存图片的路径
      *
@@ -340,7 +344,7 @@ public class AppContext extends Application {
     public String getSaveImagePath() {
         return saveImagePath;
     }
-
+    
     /**
      * 设置内存中保存图片的路径
      *
@@ -349,7 +353,7 @@ public class AppContext extends Application {
     public void setSaveImagePath(String saveImagePath) {
         this.saveImagePath = saveImagePath;
     }
-
+    
     /**
      * 是否Https登录
      *
@@ -363,7 +367,7 @@ public class AppContext extends Application {
         else
             return StringUtils.toBool(perf_httpslogin);
     }
-
+    
     /**
      * 设置是是否Https登录
      *
@@ -372,7 +376,7 @@ public class AppContext extends Application {
     public void setConfigHttpsLogin(boolean b) {
         setProperty(AppConfig.CONF_HTTPS_LOGIN, String.valueOf(b));
     }
-
+    
     /**
      * 是否加载显示文章图片
      *
@@ -386,7 +390,7 @@ public class AppContext extends Application {
         else
             return StringUtils.toBool(perf_loadimage);
     }
-
+    
     /**
      * 设置是否加载文章图片
      *
@@ -395,7 +399,7 @@ public class AppContext extends Application {
     public void setConfigLoadimage(boolean b) {
         setProperty(AppConfig.CONF_LOAD_IMAGE, String.valueOf(b));
     }
-
+    
     /**
      * 是否左右滑动
      *
@@ -409,7 +413,7 @@ public class AppContext extends Application {
         else
             return StringUtils.toBool(perf_scroll);
     }
-
+    
     /**
      * 设置是否左右滑动
      *
@@ -418,7 +422,7 @@ public class AppContext extends Application {
     public void setConfigScroll(boolean b) {
         setProperty(AppConfig.CONF_SCROLL, String.valueOf(b));
     }
-
+    
     /**
      * 是否发出提示音
      *
@@ -432,7 +436,7 @@ public class AppContext extends Application {
         else
             return StringUtils.toBool(perf_voice);
     }
-
+    
     /**
      * 设置是否发出提示音
      *
@@ -441,7 +445,7 @@ public class AppContext extends Application {
     public void setConfigVoice(boolean b) {
         setProperty(AppConfig.CONF_VOICE, String.valueOf(b));
     }
-
+    
     /**
      * 是否启动检查更新
      *
@@ -455,7 +459,7 @@ public class AppContext extends Application {
         else
             return StringUtils.toBool(perf_checkup);
     }
-
+    
     /**
      * 设置启动检查更新
      *
@@ -464,8 +468,8 @@ public class AppContext extends Application {
     public void setConfigCheckUp(boolean b) {
         setProperty(AppConfig.CONF_CHECKUP, String.valueOf(b));
     }
-
-
+    
+    
     /**
      * 判断当前版本是否兼容目标版本的方法
      *
@@ -476,8 +480,8 @@ public class AppContext extends Application {
         int currentVersion = android.os.Build.VERSION.SDK_INT;
         return currentVersion >= VersionCode;
     }
-
-
+    
+    
     /**
      * 清除app缓存
      */
@@ -511,7 +515,7 @@ public class AppContext extends Application {
                 removeProperty(_key);
         }
     }
-
+    
     /**
      * 清除缓存目录
      *
@@ -539,7 +543,7 @@ public class AppContext extends Application {
         }
         return deletedFiles;
     }
-
+    
     /**
      * 用户登录验证
      *
@@ -551,8 +555,8 @@ public class AppContext extends Application {
     public User loginVerify(String account, String pwd) throws AppException {
         return ApiClient.login(this, account, pwd);
     }
-
-
+    
+    
     /**
      * 保存登录信息
      *
@@ -575,7 +579,7 @@ public class AppContext extends Application {
             setProperty("user.isRememberMe", String.valueOf(user.isRememberMe()));//是否记住我的信息
         }});
     }
-
+    
     /**
      * 清除登录信息
      */
@@ -585,7 +589,7 @@ public class AppContext extends Application {
         removeProperty("user.uid", "user.name", "user.face", "user.account", "user.pwd",
                 "user.location", "user.followers", "user.fans", "user.score", "user.isRememberMe");
     }
-
+    
     /**
      * 动态列表
      *
@@ -620,7 +624,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     public void initLoginInfo() {
         User loginUser = getLoginInfo();
         if (loginUser != null && loginUser.getUid() > 0 && loginUser.isRememberMe()) {
@@ -630,9 +634,9 @@ public class AppContext extends Application {
             this.Logout();
         }
     }
-
+    
     //获取登录信息
-    public  User getLoginInfo() {
+    public User getLoginInfo() {
         User lu = new User();
         lu.setUid(StringUtils.toInt(getProperty("user.uid"), 0));
         lu.setName(getProperty("user.name"));
@@ -646,7 +650,7 @@ public class AppContext extends Application {
         lu.setRememberMe(StringUtils.toBool(getProperty("user.isRememberMe")));
         return lu;
     }
-
+    
     /**
      * 获取登录用户id
      *
@@ -655,7 +659,7 @@ public class AppContext extends Application {
     public int getLoginUid() {
         return this.loginUid;
     }
-
+    
     /**
      * 新闻列表
      *
@@ -690,7 +694,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     /**
      * 清空通知消息
      *
@@ -702,7 +706,7 @@ public class AppContext extends Application {
     public Result noticeClear(int uid, int type) throws AppException {
         return ApiClient.noticeClear(this, uid, type);
     }
-
+    
     /**
      * 应用程序是否发出提示音
      *
@@ -711,7 +715,7 @@ public class AppContext extends Application {
     public boolean isAppSound() {
         return isAudioNormal() && isVoice();
     }
-
+    
     /**
      * 检测当前系统声音是否为正常模式
      *
@@ -721,8 +725,8 @@ public class AppContext extends Application {
         AudioManager mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         return mAudioManager.getRingerMode() == AudioManager.RINGER_MODE_NORMAL;
     }
-
-
+    
+    
     /**
      * 帖子列表
      *
@@ -756,7 +760,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     /**
      * 博客列表
      *
@@ -790,7 +794,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     /**
      * 留言列表
      *
@@ -823,7 +827,7 @@ public class AppContext extends Application {
         }
         return list;
     }
-
+    
     /**
      * 获取用户通知信息
      *
@@ -834,11 +838,12 @@ public class AppContext extends Application {
     public Notice getUserNotice(int uid) throws AppException {
         return ApiClient.getUserNotice(this, uid);
     }
-
+    
     /**
      * 获取搜索列表
-     * @param catalog 全部:all 新闻:news  问答:post 软件:software 博客:blog 代码:code
-     * @param content 搜索的内容
+     *
+     * @param catalog   全部:all 新闻:news  问答:post 软件:software 博客:blog 代码:code
+     * @param content   搜索的内容
      * @param pageIndex
      * @param pageSize
      * @return
@@ -847,9 +852,10 @@ public class AppContext extends Application {
     public SearchList getSearchList(String catalog, String content, int pageIndex, int pageSize) throws AppException {
         return ApiClient.getSearchList(this, catalog, content, pageIndex, pageSize);
     }
-
+    
     /**
      * 发帖子
+     *
      * @param post （uid、title、catalog、content、isNoticeMe）
      * @return
      * @throws AppException
@@ -857,10 +863,11 @@ public class AppContext extends Application {
     public Result pubPost(Post post) throws AppException {
         return ApiClient.pubPost(this, post);
     }
-
-
+    
+    
     /**
      * 发动弹
+     *
      * @param 、Tweet-uid & msg & image
      * @return
      * @throws AppException
@@ -868,58 +875,60 @@ public class AppContext extends Application {
     public Result pubTweet(Tweet tweet) throws AppException {
         return ApiClient.pubTweet(this, tweet);
     }
-
+    
     /**
      * 软件分类列表
+     *
      * @param tag 第一级:0  第二级:tag
      * @return
      * @throws AppException
      */
     public SoftwareCatalogList getSoftwareCatalogList(int tag) throws AppException {
         SoftwareCatalogList list = null;
-        String key = "softwarecataloglist_"+tag;
-        if(isNetworkConnected() && isCacheDataFailure(key)) {
-            try{
+        String key = "softwarecataloglist_" + tag;
+        if (isNetworkConnected() && isCacheDataFailure(key)) {
+            try {
                 list = ApiClient.getSoftwareCatalogList(this, tag);
-                if(list != null){
+                if (list != null) {
                     Notice notice = list.getNotice();
                     list.setNotice(null);
                     list.setCacheKey(key);
                     saveObject(list, key);
                     list.setNotice(notice);
                 }
-            }catch(AppException e){
-                list = (SoftwareCatalogList)readObject(key);
-                if(list == null)
+            } catch (AppException e) {
+                list = (SoftwareCatalogList) readObject(key);
+                if (list == null)
                     throw e;
             }
         } else {
-            list = (SoftwareCatalogList)readObject(key);
-            if(list == null)
+            list = (SoftwareCatalogList) readObject(key);
+            if (list == null)
                 list = new SoftwareCatalogList();
         }
         return list;
     }
-
+    
     /**
      * 判断缓存是否失效
+     *
      * @param cachefile
      * @return
      */
-    public boolean isCacheDataFailure(String cachefile)
-    {
+    public boolean isCacheDataFailure(String cachefile) {
         boolean failure = false;
         File data = getFileStreamPath(cachefile);
-        if(data.exists() && (System.currentTimeMillis() - data.lastModified()) > CACHE_TIME)
+        if (data.exists() && (System.currentTimeMillis() - data.lastModified()) > CACHE_TIME)
             failure = true;
-        else if(!data.exists())
+        else if (!data.exists())
             failure = true;
         return failure;
     }
-
-
+    
+    
     /**
      * 软件列表
+     *
      * @param searchTag 软件分类  推荐:recommend 最新:time 热门:view 国产:list_cn
      * @param pageIndex
      * @return
@@ -927,31 +936,33 @@ public class AppContext extends Application {
      */
     public SoftwareList getSoftwareList(String searchTag, int pageIndex, boolean isRefresh) throws AppException {
         SoftwareList list = null;
-        String key = "softwarelist_"+searchTag+"_"+pageIndex+"_"+PAGE_SIZE;
-        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
-            try{
+        String key = "softwarelist_" + searchTag + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
                 list = ApiClient.getSoftwareList(this, searchTag, pageIndex, PAGE_SIZE);
-                if(list != null && pageIndex == 0){
+                if (list != null && pageIndex == 0) {
                     Notice notice = list.getNotice();
                     list.setNotice(null);
                     list.setCacheKey(key);
                     saveObject(list, key);
                     list.setNotice(notice);
                 }
-            }catch(AppException e){
-                list = (SoftwareList)readObject(key);
-                if(list == null)
+            } catch (AppException e) {
+                list = (SoftwareList) readObject(key);
+                if (list == null)
                     throw e;
             }
         } else {
-            list = (SoftwareList)readObject(key);
-            if(list == null)
+            list = (SoftwareList) readObject(key);
+            if (list == null)
                 list = new SoftwareList();
         }
         return list;
     }
+    
     /**
      * 软件分类的软件列表
+     *
      * @param searchTag 从softwarecatalog_list获取的tag
      * @param pageIndex
      * @return
@@ -959,37 +970,110 @@ public class AppContext extends Application {
      */
     public SoftwareList getSoftwareTagList(int searchTag, int pageIndex, boolean isRefresh) throws AppException {
         SoftwareList list = null;
-        String key = "softwaretaglist_"+searchTag+"_"+pageIndex+"_"+PAGE_SIZE;
-        if(isNetworkConnected() && (isCacheDataFailure(key) || isRefresh)) {
-            try{
+        String key = "softwaretaglist_" + searchTag + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (isCacheDataFailure(key) || isRefresh)) {
+            try {
                 list = ApiClient.getSoftwareTagList(this, searchTag, pageIndex, PAGE_SIZE);
-                if(list != null && pageIndex == 0){
+                if (list != null && pageIndex == 0) {
                     Notice notice = list.getNotice();
                     list.setNotice(null);
                     list.setCacheKey(key);
                     saveObject(list, key);
                     list.setNotice(notice);
                 }
-            }catch(AppException e){
-                list = (SoftwareList)readObject(key);
-                if(list == null)
+            } catch (AppException e) {
+                list = (SoftwareList) readObject(key);
+                if (list == null)
                     throw e;
             }
         } else {
-            list = (SoftwareList)readObject(key);
-            if(list == null)
+            list = (SoftwareList) readObject(key);
+            if (list == null)
                 list = new SoftwareList();
         }
         return list;
     }
-
+    
     /**
      * 扫描二维码签到
+     *
      * @param barcode
      * @return
      * @throws AppException
      */
-    public String signIn(Barcode barcode) throws AppException{
+    public String signIn(Barcode barcode) throws AppException {
         return ApiClient.signIn(this, barcode);
     }
+    
+    /**
+     * 获取当前网络类型
+     * @return 0：没有网络   1：WIFI网络   2：WAP网络    3：NET网络
+     */
+    public int getNetworkType() {
+        int netType = 0;
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo == null) {
+            return netType;
+        }
+        int nType = networkInfo.getType();
+        if (nType == ConnectivityManager.TYPE_MOBILE) {
+            String extraInfo = networkInfo.getExtraInfo();
+            if(!StringUtils.isEmpty(extraInfo)){
+                if (extraInfo.toLowerCase().equals("cmnet")) {
+                    netType = NETTYPE_CMNET;
+                } else {
+                    netType = NETTYPE_CMWAP;
+                }
+            }
+        } else if (nType == ConnectivityManager.TYPE_WIFI) {
+            netType = NETTYPE_WIFI;
+        }
+        return netType;
+    }
+    
+    /**
+     * 新闻详情
+     * @param news_id
+     * @return
+     * @throws 、ApiException
+     */
+    public News getNews(int news_id, boolean isRefresh) throws AppException {
+        News news = null;
+        String key = "news_"+news_id;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                news = ApiClient.getNewsDetail(this, news_id);
+                if(news != null){
+                    Notice notice = news.getNotice();
+                    news.setNotice(null);
+                    news.setCacheKey(key);
+                    saveObject(news, key);
+                    news.setNotice(notice);
+                }
+            }catch(AppException e){
+                news = (News)readObject(key);
+                if(news == null)
+                    throw e;
+            }
+        } else {
+            news = (News)readObject(key);
+            if(news == null)
+                news = new News();
+        }
+        return news;
+    }
+    
+    /**
+     * 用户删除收藏
+     * @param uid 用户UID
+     * @param objid 比如是新闻ID 或者问答ID 或者动弹ID
+     * @param type 1:软件 2:话题 3:博客 4:新闻 5:代码
+     * @return
+     * @throws AppException
+     */
+    public Result delFavorite(int uid, int objid, int type) throws AppException {
+        return ApiClient.delFavorite(this, uid, objid, type);
+    }
+    
 }

@@ -2,6 +2,7 @@ package net.oschina.app.common;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -192,4 +193,22 @@ public class FileUtils {
         int point = fileName.lastIndexOf('.');
         return fileName.substring(point + 1);
     }
+    
+    /**
+     * 删除文件
+     *
+     * @param filePath
+     */
+    public static boolean deleteFileWithPath(String filePath) {
+        SecurityManager checker = new SecurityManager();
+        File f = new File(filePath);
+        checker.checkDelete(filePath);
+        if (f.isFile()) {
+            Log.i(" deleteFile", filePath);
+            f.delete();
+            return true;
+        }
+        return false;
+    }
+    
 }

@@ -1,5 +1,4 @@
 package net.oschina.app;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -60,28 +59,20 @@ import net.oschina.app.widget.ScrollLayout;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 public class MainActivity extends BaseActivity {
-
     public static final int QUICKACTION_LOGIN_OR_LOGOUT = 0;
     public static final int QUICKACTION_USERINFO = 1;
     public static final int QUICKACTION_SOFTWARE = 2;
     public static final int QUICKACTION_SEARCH = 3;
     public static final int QUICKACTION_SETTING = 4;
     public static final int QUICKACTION_EXIT = 5;
-
-
     private DoubleClickExitHelper clickExitHelper;
     private TweetReceiver tweetReceiver;// 动弹发布接收器
     private int curTweetCatalog = TweetList.CATALOG_LASTEST;
     private int mCurSel;
-
-
     private ProgressBar mHeadProgress;
     private AppContext appContext;
-
     private int curActiveCatalog = ActiveList.CATALOG_LASTEST;
-
     private ImageView mHeadLogo;
     private TextView mHeadTitle;
     private ImageButton mHead_search;
