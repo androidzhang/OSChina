@@ -922,4 +922,84 @@ public class ApiClient {
             throw AppException.network(e);
         }
     }
+    
+    /**
+     * 删除评论
+     * @param id 表示被评论对应的某条新闻,帖子,动弹的id 或者某条消息的 friendid
+     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态&留言
+     * @param replyid 表示被回复的单个评论id
+     * @param authorid 表示该评论的原始作者id
+     * @return
+     * @throws AppException
+     */
+    public static Result delComment(AppContext appContext, int id, int catalog, int replyid, int authorid) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("id", id);
+        params.put("catalog", catalog);
+        params.put("replyid", replyid);
+        params.put("authorid", authorid);
+        
+        try{
+            return http_post(appContext, URLs.COMMENT_DELETE, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 发表博客评论
+     * @param blog 博客id
+     * @param uid 登陆用户的uid
+     * @param content 评论内容
+     * @param reply_id 评论id
+     * @param objuid 被评论的评论发表者的uid
+     * @return
+     * @throws AppException
+     */
+    public static Result replyBlogComment(AppContext appContext, int blog, int uid, String content, int reply_id, int objuid) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("blog", blog);
+        params.put("uid", uid);
+        params.put("content", content);
+        params.put("reply_id", reply_id);
+        params.put("objuid", objuid);
+        
+        try{
+            return http_post(appContext, URLs.BLOGCOMMENT_PUB, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     *
+     * @param id 表示被评论的某条新闻，帖子，动弹的id 或者某条消息的 friendid
+     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态
+     * @param replyid 表示被回复的单个评论id
+     * @param authorid 表示该评论的原始作者id
+     * @param uid 用户uid 一般都是当前登录用户uid
+     * @param content 发表评论的内容
+     * @return
+     * @throws AppException
+     */
+    public static Result replyComment(AppContext appContext, int id, int catalog, int replyid, int authorid, int uid, String content) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("catalog", catalog);
+        params.put("id", id);
+        params.put("uid", uid);
+        params.put("content", content);
+        params.put("replyid", replyid);
+        params.put("authorid", authorid);
+        
+        try{
+            return http_post(appContext, URLs.COMMENT_REPLY, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
 }

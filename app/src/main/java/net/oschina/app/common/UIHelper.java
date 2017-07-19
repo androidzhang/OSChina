@@ -41,6 +41,7 @@ import net.oschina.app.adapter.GridViewFaceAdapter;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.AccessInfo;
 import net.oschina.app.bean.Active;
+import net.oschina.app.bean.Comment;
 import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.CommentPub;
 import net.oschina.app.bean.News;
@@ -1024,6 +1025,60 @@ public class UIHelper {
                 3 + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return sp;
     }
+    
+    /**
+     * 评论操作选择框
+     * @param context
+     * @param id
+     *            某条新闻，帖子，动弹的id 或者某条消息的 friendid
+     * @param catalog
+     *            该评论所属类型：1新闻 2帖子 3动弹 4动态
+     * @param comment
+     *            本条评论对象，用于获取评论id&评论者authorid
+     * @param thread
+     *            处理删除评论的线程，若无删除操作传null
+     */
+    public static void showCommentOptionDialog(final Activity context,
+                                               final int id, final int catalog, final Comment comment,
+                                               final Thread thread) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.mipmap.ic_dialog_menu);
+        builder.setTitle(context.getString(R.string.select));
+        if (thread != null) {
+            builder.setItems(R.array.comment_options_2,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            switch (arg1) {
+                                case 0:// 回复
+                                    showCommentReply(context, id, catalog,
+                                            comment.getId(), comment.getAuthorId(),
+                                            comment.getAuthor(),
+                                            comment.getContent());
+                                    break;
+                                case 1:// 删除
+                                    thread.start();
+                                    break;
+                            }
+                        }
+                    });
+        } else {
+            builder.setItems(R.array.comment_options_1,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            switch (arg1) {
+                                case 0:// 回复
+                                    showCommentReply(context, id, catalog,
+                                            comment.getId(), comment.getAuthorId(),
+                                            comment.getAuthor(),
+                                            comment.getContent());
+                                    break;
+                            }
+                        }
+                    });
+        }
+        builder.create().show();
+    }
+
     
     
     /**

@@ -1,10 +1,8 @@
 package net.oschina.app.bean;
 
-import net.oschina.app.AppContext;
 import net.oschina.app.AppException;
 import net.oschina.app.R;
-import net.oschina.app.bean.CommentList;
-import net.oschina.app.bean.Result;
+import net.oschina.app.application.AppContext;
 import net.oschina.app.common.StringUtils;
 import net.oschina.app.common.UIHelper;
 import net.oschina.app.ui.BaseActivity;
