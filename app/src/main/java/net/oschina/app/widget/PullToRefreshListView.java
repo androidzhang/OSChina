@@ -1,5 +1,4 @@
 package net.oschina.app.widget;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -16,10 +15,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-
+import net.oschina.app.R;
 /**
  * 下拉刷新控件
- *
  * @author liux (http://my.oschina.net/liux)
  * @version 1.0
  * @created 2012-3-21
@@ -311,7 +309,7 @@ public class PullToRefreshListView extends ListView implements OnScrollListener 
     }
 
     public interface OnRefreshListener {
-        public void onRefresh();
+         void onRefresh();
     }
 
     public void onRefreshComplete(String update) {
