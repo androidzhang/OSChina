@@ -65,6 +65,7 @@ import net.oschina.app.ui.TweetPub;
 import net.oschina.app.ui.UserInfo;
 import net.oschina.app.widget.LinkView;
 import net.oschina.app.widget.MyQuickAction;
+import net.oschina.app.widget.PathChooseDialog;
 import net.oschina.app.widget.QuickAction;
 import net.oschina.app.widget.ScreenShotView;
 
@@ -1078,7 +1079,16 @@ public class UIHelper {
         }
         builder.create().show();
     }
-
+    
+    /**
+     * 显示路径选择对话框
+     *
+     * @param context
+     */
+    public static void showFilePathDialog(Activity context,
+                                          PathChooseDialog.ChooseCompleteListener listener) {
+        new PathChooseDialog(context, listener).show();
+    }
     
     
     /**

@@ -12,12 +12,14 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import net.oschina.app.AppConfig;
 import net.oschina.app.AppManager;
 import net.oschina.app.R;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.common.FileUtils;
 import net.oschina.app.common.MethodsCompat;
 import net.oschina.app.common.UIHelper;
+import net.oschina.app.widget.PathChooseDialog;
 
 import java.io.File;
 
@@ -26,32 +28,22 @@ import java.io.File;
  */
 
 public class Setting extends PreferenceActivity {
-
-
     private SharedPreferences mPreferences;
     private Preference account, myinfo, saveImagePath, cache, feedback, update, about;
     private CheckBoxPreference httpslogin, loadimage, scroll, voice, checkup;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         AppManager.getAppManager().addActivity(this);
-
         // 设置显示Preferences
-
         addPreferencesFromResource(R.xml.preference);
         // 获得SharedPreferences
-
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
         ListView localListView = getListView();
-
         localListView.setBackgroundColor(0);
         localListView.setCacheColorHint(0);
         ((ViewGroup) localListView.getParent()).removeView(localListView);
         ViewGroup localViewGroup = (ViewGroup) getLayoutInflater().inflate(R.layout.setting, null);
-
         ((ViewGroup) localViewGroup.findViewById(R.id.setting_content)).addView(localListView, -1, -1);
         setContentView(localViewGroup);
         final AppContext ac = (AppContext) getApplication();
@@ -70,28 +62,18 @@ public class Setting extends PreferenceActivity {
                 return true;
             }
         });
-
         // 我的资料
-
         myinfo = (Preference) findPreference("myinfo");
-
         myinfo.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
-
                 UIHelper.showUserInfo(Setting.this);
-
                 return true;
             }
         });
-
         // 设置保存图片路径
-
         saveImagePath = (Preference) findPreference("saveimagepath");
-
         saveImagePath.setSummary("目前路径:" + ac.getSaveImagePath());
-
         saveImagePath.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -99,12 +81,15 @@ public class Setting extends PreferenceActivity {
                     Toast.makeText(Setting.this, "手机中尚未安装SD卡", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-
-
-                //暫時不xie
-//                UIHelper.showFilePathDialog(Setting.this);
-
-
+                UIHelper.showFilePathDialog(Setting.this,new PathChooseDialog.ChooseCompleteListener(){
+                    @Override
+                    public void onComplete(String finalPath) {
+                        finalPath = finalPath+File.separator;
+                        saveImagePath.setSummary("目前路径:"+finalPath);
+                        ac.setSaveImagePath(finalPath);
+                        ac.setProperty(AppConfig.SAVE_IMAGE_PATH, finalPath);
+                    }
+                });
                 return true;
             }
         });

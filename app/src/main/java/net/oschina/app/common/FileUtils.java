@@ -60,7 +60,7 @@ public class FileUtils {
     }
 
     //列出root目录下所有子目录
-    private static List<String> listPath(String root) {
+    public static List<String> listPath(String root) {
 
         List<String> allDir = new ArrayList<String>();
         SecurityManager checker = new SecurityManager();
@@ -210,5 +210,62 @@ public class FileUtils {
         }
         return false;
     }
+    
+    public static int deleteBlankPath(String path) {
+        return 0;
+    }
+    
+    
+    public static String getSDRoot() {
+        return null;
+    }
+    
+    public static String getExternalSDRoot() {
+        return null;
+    }
+    
+    /**
+     * 截取路径名
+     *
+     * @return
+     */
+    public static String getPathName(String absolutePath) {
+        int start = absolutePath.lastIndexOf(File.separator) + 1;
+        int end = absolutePath.length();
+        return absolutePath.substring(start, end);
+    }
+    
+    /**
+     * 重命名
+     *
+     * @param oldName
+     * @param newName
+     * @return
+     */
+    public static boolean reNamePath(String oldName, String newName) {
+        File f = new File(oldName);
+        return f.renameTo(new File(newName));
+    }
+    
+    public enum PathStatus {
+        SUCCESS, EXITS, ERROR
+    }
+    /**
+     * 创建目录
+     *
+     * @param /path
+     */
+    public static PathStatus createPath(String newPath) {
+        File path = new File(newPath);
+        if (path.exists()) {
+            return PathStatus.EXITS;
+        }
+        if (path.mkdir()) {
+            return PathStatus.SUCCESS;
+        } else {
+            return PathStatus.ERROR;
+        }
+    }
+    
     
 }
