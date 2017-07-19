@@ -99,7 +99,6 @@ public abstract class QuickActionWidget extends PopupWindow {
         setOutsideTouchable(true);
         setWidth(LayoutParams.WRAP_CONTENT);
         setHeight(LayoutParams.WRAP_CONTENT);
-
         final WindowManager windowManager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         mScreenWidth = windowManager.getDefaultDisplay().getWidth();
         mScreenHeight = windowManager.getDefaultDisplay().getHeight();
