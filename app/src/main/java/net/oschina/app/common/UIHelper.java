@@ -1082,7 +1082,6 @@ public class UIHelper {
     
     /**
      * 显示路径选择对话框
-     *
      * @param context
      */
     public static void showFilePathDialog(Activity context,
@@ -1091,13 +1090,4 @@ public class UIHelper {
     }
     
     
-    /**
-     * 显示路径选择对话框
-     *
-     * @param context
-     */
-//    public static void showFilePathDialog(Activity context,
-//                                          ChooseCompleteListener listener) {
-//        new PathChooseDialog(context, listener).show();
-//    }
 }
