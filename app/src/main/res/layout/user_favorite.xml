@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="@color/white"
+              android:orientation="vertical">
+    <FrameLayout
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:background="@mipmap/widget_head_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="2dip"
+        android:paddingRight="7dip">
+        <ImageView
+            android:id="@+id/favorite_head_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center"
+            android:background="@drawable/head_back"
+            android:clickable="true"/>
+        <TextView
+            style="@style/detail_head_title"
+            android:layout_gravity="center"
+            android:text="我的收藏夹"/>
+
+        <ProgressBar
+            android:id="@+id/favorite_head_progress"
+            style="@style/loading_small"
+            android:layout_gravity="right|center"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/favorite_ll"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="35.0dip"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/favorite_catalog_software"
+                style="@style/frame_button"
+                android:text="软件"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@mipmap/frame_button_cutline"/>
+
+            <Button
+                android:id="@+id/favorite_catalog_post"
+                style="@style/frame_button"
+                android:text="话题"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@mipmap/frame_button_cutline"/>
+
+            <Button
+                android:id="@+id/favorite_catalog_code"
+                style="@style/frame_button"
+                android:text="代码"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@mipmap/frame_button_cutline"/>
+
+            <Button
+                android:id="@+id/favorite_catalog_blog"
+                style="@style/frame_button"
+                android:text="博客"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@mipmap/frame_button_cutline"/>
+
+            <Button
+                android:id="@+id/favorite_catalog_news"
+                style="@style/frame_button"
+                android:text="资讯"/>
+        </LinearLayout>
+
+        <net.oschina.app.widget.PullToRefreshListView
+            android:id="@+id/favorite_listview"
+            style="@style/widget_listview"/>
+
+    </LinearLayout>
+
+</LinearLayout>

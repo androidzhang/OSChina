@@ -18,6 +18,8 @@ import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.CommentList;
+import net.oschina.app.bean.FavoriteList;
+import net.oschina.app.bean.FriendList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.NewsList;
@@ -31,6 +33,7 @@ import net.oschina.app.bean.SoftwareList;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.User;
+import net.oschina.app.bean.UserInformation;
 import net.oschina.app.common.CyptoUtils;
 import net.oschina.app.common.FileUtils;
 import net.oschina.app.common.MethodsCompat;
@@ -45,6 +48,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -1008,6 +1012,7 @@ public class AppContext extends Application {
     
     /**
      * 获取当前网络类型
+     *
      * @return 0：没有网络   1：WIFI网络   2：WAP网络    3：NET网络
      */
     public int getNetworkType() {
@@ -1020,7 +1025,7 @@ public class AppContext extends Application {
         int nType = networkInfo.getType();
         if (nType == ConnectivityManager.TYPE_MOBILE) {
             String extraInfo = networkInfo.getExtraInfo();
-            if(!StringUtils.isEmpty(extraInfo)){
+            if (!StringUtils.isEmpty(extraInfo)) {
                 if (extraInfo.toLowerCase().equals("cmnet")) {
                     netType = NETTYPE_CMNET;
                 } else {
@@ -1035,31 +1040,32 @@ public class AppContext extends Application {
     
     /**
      * 新闻详情
+     *
      * @param news_id
      * @return
      * @throws 、ApiException
      */
     public News getNews(int news_id, boolean isRefresh) throws AppException {
         News news = null;
-        String key = "news_"+news_id;
-        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
-            try{
+        String key = "news_" + news_id;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
                 news = ApiClient.getNewsDetail(this, news_id);
-                if(news != null){
+                if (news != null) {
                     Notice notice = news.getNotice();
                     news.setNotice(null);
                     news.setCacheKey(key);
                     saveObject(news, key);
                     news.setNotice(notice);
                 }
-            }catch(AppException e){
-                news = (News)readObject(key);
-                if(news == null)
+            } catch (AppException e) {
+                news = (News) readObject(key);
+                if (news == null)
                     throw e;
             }
         } else {
-            news = (News)readObject(key);
-            if(news == null)
+            news = (News) readObject(key);
+            if (news == null)
                 news = new News();
         }
         return news;
@@ -1067,9 +1073,10 @@ public class AppContext extends Application {
     
     /**
      * 用户删除收藏
-     * @param uid 用户UID
+     *
+     * @param uid   用户UID
      * @param objid 比如是新闻ID 或者问答ID 或者动弹ID
-     * @param type 1:软件 2:话题 3:博客 4:新闻 5:代码
+     * @param type  1:软件 2:话题 3:博客 4:新闻 5:代码
      * @return
      * @throws AppException
      */
@@ -1079,25 +1086,25 @@ public class AppContext extends Application {
     
     public CommentList getCommentList(int catalog, int id, int pageIndex, boolean isRefresh) throws AppException {
         CommentList list = null;
-        String key = "commentlist_"+catalog+"_"+id+"_"+pageIndex+"_"+PAGE_SIZE;
-        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
-            try{
+        String key = "commentlist_" + catalog + "_" + id + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
                 list = ApiClient.getCommentList(this, catalog, id, pageIndex, PAGE_SIZE);
-                if(list != null && pageIndex == 0){
+                if (list != null && pageIndex == 0) {
                     Notice notice = list.getNotice();
                     list.setNotice(null);
                     list.setCacheKey(key);
                     saveObject(list, key);
                     list.setNotice(notice);
                 }
-            }catch(AppException e){
-                list = (CommentList)readObject(key);
-                if(list == null)
+            } catch (AppException e) {
+                list = (CommentList) readObject(key);
+                if (list == null)
                     throw e;
             }
         } else {
-            list = (CommentList)readObject(key);
-            if(list == null)
+            list = (CommentList) readObject(key);
+            if (list == null)
                 list = new CommentList();
         }
         return list;
@@ -1113,9 +1120,10 @@ public class AppContext extends Application {
     
     /**
      * 删除评论
-     * @param id 表示被评论对应的某条新闻,帖子,动弹的id 或者某条消息的 friendid
-     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态&留言
-     * @param replyid 表示被回复的单个评论id
+     *
+     * @param id       表示被评论对应的某条新闻,帖子,动弹的id 或者某条消息的 friendid
+     * @param catalog  表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态&留言
+     * @param replyid  表示被回复的单个评论id
      * @param authorid 表示该评论的原始作者id
      * @return
      * @throws AppException
@@ -1126,25 +1134,26 @@ public class AppContext extends Application {
     
     /**
      * 发表博客评论
-     * @param blog 博客id
-     * @param uid 登陆用户的uid
-     * @param content 评论内容
+     *
+     * @param blog     博客id
+     * @param uid      登陆用户的uid
+     * @param content  评论内容
      * @param reply_id 评论id
-     * @param objuid 被评论的评论发表者的uid
+     * @param objuid   被评论的评论发表者的uid
      * @return
      * @throws AppException
      */
     public Result replyBlogComment(int blog, int uid, String content, int reply_id, int objuid) throws AppException {
         return ApiClient.replyBlogComment(this, blog, uid, content, reply_id, objuid);
     }
+    
     /**
-     *
-     * @param id 表示被评论的某条新闻，帖子，动弹的id 或者某条消息的 friendid
-     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态
-     * @param replyid 表示被回复的单个评论id
+     * @param id       表示被评论的某条新闻，帖子，动弹的id 或者某条消息的 friendid
+     * @param catalog  表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态
+     * @param replyid  表示被回复的单个评论id
      * @param authorid 表示该评论的原始作者id
-     * @param uid 用户uid 一般都是当前登录用户uid
-     * @param content 发表评论的内容
+     * @param uid      用户uid 一般都是当前登录用户uid
+     * @param content  发表评论的内容
      * @return
      * @throws AppException
      */
@@ -1152,4 +1161,198 @@ public class AppContext extends Application {
         return ApiClient.replyComment(this, id, catalog, replyid, authorid, uid, content);
     }
     
+    /**
+     * 用户粉丝、关注人列表
+     *
+     * @param relation  0:显示自己的粉丝 1:显示自己的关注者
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public FriendList getFriendList(int relation, int pageIndex, boolean isRefresh) throws AppException {
+        FriendList list = null;
+        String key = "friendlist_" + loginUid + "_" + relation + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
+                list = ApiClient.getFriendList(this, loginUid, relation, pageIndex, PAGE_SIZE);
+                if (list != null && pageIndex == 0) {
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            } catch (AppException e) {
+                list = (FriendList) readObject(key);
+                if (list == null)
+                    throw e;
+            }
+        } else {
+            list = (FriendList) readObject(key);
+            if (list == null)
+                list = new FriendList();
+        }
+        return list;
+    }
+    
+    /**
+     * 用户收藏列表
+     *
+     * @param type      0:全部收藏 1:软件 2:话题 3:博客 4:新闻 5:代码
+     * @param pageIndex 页面索引 0表示第一页
+     * @return
+     * @throws AppException
+     */
+    public FavoriteList getFavoriteList(int type, int pageIndex, boolean isRefresh) throws AppException {
+        FavoriteList list = null;
+        String key = "favoritelist_" + loginUid + "_" + type + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
+                list = ApiClient.getFavoriteList(this, loginUid, type, pageIndex, PAGE_SIZE);
+                if (list != null && pageIndex == 0) {
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            } catch (AppException e) {
+                list = (FavoriteList) readObject(key);
+                if (list == null)
+                    throw e;
+            }
+        } else {
+            list = (FavoriteList) readObject(key);
+            if (list == null)
+                list = new FavoriteList();
+        }
+        return list;
+    }
+    
+    /**
+     * 删除博客评论
+     *
+     * @param uid      登录用户的uid
+     * @param blogid   博客id
+     * @param replyid  评论id
+     * @param authorid 评论发表者的uid
+     * @param owneruid 博客作者uid
+     * @return
+     * @throws AppException
+     */
+    public Result delBlogComment(int uid, int blogid, int replyid, int authorid, int owneruid) throws AppException {
+        return ApiClient.delBlogComment(this, uid, blogid, replyid, authorid, owneruid);
+    }
+    
+    /**
+     * 删除博客
+     *
+     * @param uid       登录用户的uid
+     * @param authoruid 博客作者uid
+     * @param id        博客id
+     * @return
+     * @throws AppException
+     */
+    public Result delBlog(int uid, int authoruid, int id) throws AppException {
+        return ApiClient.delBlog(this, uid, authoruid, id);
+    }
+    
+    
+    /**
+     * 获取用户信息个人专页（包含该用户的动态信息以及个人信息）
+     *
+     * @param uid       自己的uid
+     * @param hisuid    被查看用户的uid
+     * @param hisname   被查看用户的用户名
+     * @param pageIndex 页面索引
+     * @return
+     * @throws AppException
+     */
+    public UserInformation getInformation(int uid, int hisuid, String hisname, int pageIndex, boolean isRefresh) throws AppException {
+        String _hisname = "";
+        if (!StringUtils.isEmpty(hisname)) {
+            _hisname = hisname;
+        }
+        UserInformation userinfo = null;
+        String key = "userinfo_" + uid + "_" + hisuid + "_" + (URLEncoder.encode(hisname)) + "_" + pageIndex + "_" + PAGE_SIZE;
+        if (isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try {
+                userinfo = ApiClient.information(this, uid, hisuid, _hisname, pageIndex, PAGE_SIZE);
+                if (userinfo != null && pageIndex == 0) {
+                    Notice notice = userinfo.getNotice();
+                    userinfo.setNotice(null);
+                    userinfo.setCacheKey(key);
+                    saveObject(userinfo, key);
+                    userinfo.setNotice(notice);
+                }
+            } catch (AppException e) {
+                userinfo = (UserInformation) readObject(key);
+                if (userinfo == null)
+                    throw e;
+            }
+        } else {
+            userinfo = (UserInformation) readObject(key);
+            if (userinfo == null)
+                userinfo = new UserInformation();
+        }
+        return userinfo;
+    }
+    
+    /**
+     * 发送留言
+     * @param uid 登录用户uid
+     * @param receiver 接受者的用户id
+     * @param content 消息内容，注意不能超过250个字符
+     * @return
+     * @throws AppException
+     */
+    public Result pubMessage(int uid, int receiver, String content) throws AppException {
+        return ApiClient.pubMessage(this, uid, receiver, content);
+    }
+    
+    /**
+     * 更新用户之间关系（加关注、取消关注）
+     * @param uid 自己的uid
+     * @param hisuid 对方用户的uid
+     * @param newrelation 0:取消对他的关注 1:关注他
+     * @return
+     * @throws AppException
+     */
+    public Result updateRelation(int uid, int hisuid, int newrelation) throws AppException {
+        return ApiClient.updateRelation(this, uid, hisuid, newrelation);
+    }
+    /**
+     * 用户博客列表
+     * @param authoruid
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public BlogList getUserBlogList(int authoruid, String authorname, int pageIndex, boolean isRefresh) throws AppException {
+        BlogList list = null;
+        String key = "userbloglist_"+authoruid+"_"+(URLEncoder.encode(authorname))+"_"+loginUid+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                list = ApiClient.getUserBlogList(this, authoruid, authorname, loginUid, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (BlogList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (BlogList)readObject(key);
+            if(list == null)
+                list = new BlogList();
+        }
+        return list;
+    }
+    
 }
+	

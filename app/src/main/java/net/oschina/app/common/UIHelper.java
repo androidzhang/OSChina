@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -31,13 +32,16 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import net.oschina.app.AppConfig;
+import net.oschina.app.AppException;
 import net.oschina.app.MainActivity;
 import net.oschina.app.R;
 import net.oschina.app.adapter.GridViewFaceAdapter;
+import net.oschina.app.api.ApiClient;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.AccessInfo;
 import net.oschina.app.bean.Active;
@@ -55,6 +59,7 @@ import net.oschina.app.ui.CaptureActivity;
 import net.oschina.app.ui.FeedBack;
 import net.oschina.app.ui.ImageZoomDialog;
 import net.oschina.app.ui.LoginDialog;
+import net.oschina.app.ui.MessagePub;
 import net.oschina.app.ui.NewsDetail;
 import net.oschina.app.ui.QuestionPub;
 import net.oschina.app.ui.ScreenShotShare;
@@ -62,6 +67,8 @@ import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
 import net.oschina.app.ui.SoftwareLib;
 import net.oschina.app.ui.TweetPub;
+import net.oschina.app.ui.UserCenter;
+import net.oschina.app.ui.UserFavorite;
 import net.oschina.app.ui.UserInfo;
 import net.oschina.app.widget.LinkView;
 import net.oschina.app.widget.MyQuickAction;
@@ -69,6 +76,7 @@ import net.oschina.app.widget.PathChooseDialog;
 import net.oschina.app.widget.QuickAction;
 import net.oschina.app.widget.ScreenShotView;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -79,17 +87,17 @@ import java.util.regex.Pattern;
  */
 
 public class UIHelper {
-
+    
     public final static int LISTVIEW_ACTION_INIT = 0x01;
     public final static int LISTVIEW_ACTION_REFRESH = 0x02;
     public final static int LISTVIEW_ACTION_SCROLL = 0x03;
     public final static int LISTVIEW_ACTION_CHANGE_CATALOG = 0x04;
-
+    
     public final static int LISTVIEW_DATA_MORE = 0x01;
     public final static int LISTVIEW_DATA_LOADING = 0x02;
     public final static int LISTVIEW_DATA_FULL = 0x03;
     public final static int LISTVIEW_DATA_EMPTY = 0x04;
-
+    
     public final static int LISTVIEW_DATATYPE_NEWS = 0x01;
     public final static int LISTVIEW_DATATYPE_BLOG = 0x02;
     public final static int LISTVIEW_DATATYPE_POST = 0x03;
@@ -97,7 +105,7 @@ public class UIHelper {
     public final static int LISTVIEW_DATATYPE_ACTIVE = 0x05;
     public final static int LISTVIEW_DATATYPE_MESSAGE = 0x06;
     public final static int LISTVIEW_DATATYPE_COMMENT = 0x07;
-
+    
     public final static int REQUEST_CODE_FOR_RESULT = 0x01;
     public final static int REQUEST_CODE_FOR_REPLY = 0x02;
     // 链接样式文件，代码块高亮的处理
@@ -115,7 +123,7 @@ public class UIHelper {
      */
     private static Pattern facePattern = Pattern
             .compile("\\[{1}([0-9]\\d*)\\]{1}");
-
+    
     /**
      * 弹出Toast消息
      *
@@ -124,15 +132,15 @@ public class UIHelper {
     public static void ToastMessage(Context cont, String msg) {
         Toast.makeText(cont, msg, Toast.LENGTH_SHORT).show();
     }
-
+    
     public static void ToastMessage(Context cont, int msg) {
         Toast.makeText(cont, msg, Toast.LENGTH_SHORT).show();
     }
-
+    
     public static void ToastMessage(Context cont, String msg, int time) {
         Toast.makeText(cont, msg, time).show();
     }
-
+    
     /**
      * 发送通知广播
      *
@@ -150,7 +158,7 @@ public class UIHelper {
         intent.putExtra("newFansCount", notice.getNewFansCount());
         context.sendBroadcast(intent);
     }
-
+    
     /**
      * 显示登录页面
      *
@@ -166,8 +174,8 @@ public class UIHelper {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
-
-
+    
+    
     /**
      * 点击返回监听事件
      *
@@ -181,8 +189,8 @@ public class UIHelper {
             }
         };
     }
-
-
+    
+    
     /**
      * 用户登录或注销
      *
@@ -197,7 +205,7 @@ public class UIHelper {
             showLoginDialog(activity);
         }
     }
-
+    
     /**
      * 显示我的资料
      *
@@ -212,12 +220,12 @@ public class UIHelper {
             context.startActivity(intent);
         }
     }
-
+    
     public static void changeSettingIsLoadImage(Activity activity, boolean b) {
         AppContext ac = (AppContext) activity.getApplication();
         ac.setConfigLoadimage(b);
     }
-
+    
     /**
      * 清除app缓存
      *
@@ -248,7 +256,7 @@ public class UIHelper {
             }
         }.start();
     }
-
+    
     /**
      * 显示用户反馈
      *
@@ -258,7 +266,7 @@ public class UIHelper {
         Intent intent = new Intent(context, FeedBack.class);
         context.startActivity(intent);
     }
-
+    
     /**
      * 显示关于我们
      *
@@ -268,7 +276,7 @@ public class UIHelper {
         Intent intent = new Intent(context, About.class);
         context.startActivity(intent);
     }
-
+    
     /**
      * 显示搜索界面
      *
@@ -278,7 +286,7 @@ public class UIHelper {
         Intent intent = new Intent(context, Search.class);
         context.startActivity(intent);
     }
-
+    
     /**
      * 显示我要提问页面
      *
@@ -288,7 +296,7 @@ public class UIHelper {
         Intent intent = new Intent(context, QuestionPub.class);
         context.startActivity(intent);
     }
-
+    
     /**
      * 显示动弹一下页面
      *
@@ -298,7 +306,13 @@ public class UIHelper {
         Intent intent = new Intent(context, TweetPub.class);
         context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
     }
-
+    
+    public static void showTweetPub(Activity context, String atme, int atuid) {
+        Intent intent = new Intent(context, TweetPub.class);
+        intent.putExtra("at_me", atme);
+        intent.putExtra("at_uid", atuid);
+        context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
+    }
     /**
      * 快捷栏显示登录与登出
      *
@@ -317,26 +331,26 @@ public class UIHelper {
             qa.setTitle(activity.getString(R.string.main_menu_login));
         }
     }
-
+    
     public static void showSoftware(MainActivity mainActivity) {
-
+        
         Intent intent = new Intent(mainActivity, SoftwareLib.class);
         mainActivity.startActivity(intent);
-
+        
     }
-
+    
     public static void showCapture(MainActivity mainActivity) {
         Intent intent = new Intent(mainActivity, CaptureActivity.class);
         mainActivity.startActivity(intent);
-
+        
     }
-
+    
     public static void showSetting(Context context) {
-
+        
         Intent intent = new Intent(context, Setting.class);
         context.startActivity(intent);
     }
-
+    
     /**
      * 新闻超链接点击跳转
      *
@@ -370,7 +384,7 @@ public class UIHelper {
             showUrlRedirect(context, url);
         }
     }
-
+    
     /**
      * url跳转
      *
@@ -386,7 +400,7 @@ public class UIHelper {
             openBrowser(context, url);
         }
     }
-
+    
     public static void showLinkRedirect(Context context, int objType,
                                         int objId, String objKey) {
         switch (objType) {
@@ -416,7 +430,7 @@ public class UIHelper {
                 break;
         }
     }
-
+    
     /**
      * 显示动弹详情及评论
      *
@@ -428,7 +442,7 @@ public class UIHelper {
 //        intent.putExtra("tweet_id", tweetId);
 //        context.startActivity(intent);
     }
-
+    
     /**
      * 显示用户动态
      *
@@ -444,7 +458,7 @@ public class UIHelper {
 //        intent.putExtra("his_name", hisname);
 //        context.startActivity(intent);
     }
-
+    
     /**
      * 显示相关Tag帖子列表
      *
@@ -456,7 +470,7 @@ public class UIHelper {
 //        intent.putExtra("post_tag", tag);
 //        context.startActivity(intent);
     }
-
+    
     /**
      * 打开浏览器
      *
@@ -473,7 +487,7 @@ public class UIHelper {
             ToastMessage(context, "无法浏览此网页", 500);
         }
     }
-
+    
     /**
      * 显示博客详情
      *
@@ -485,7 +499,7 @@ public class UIHelper {
 //        intent.putExtra("blog_id", blogId);
 //        context.startActivity(intent);
     }
-
+    
     /**
      * 显示帖子详情
      *
@@ -497,8 +511,8 @@ public class UIHelper {
 //        intent.putExtra("post_id", postId);
 //        context.startActivity(intent);
     }
-
-
+    
+    
     /**
      * 显示软件详情
      *
@@ -510,8 +524,8 @@ public class UIHelper {
 //        intent.putExtra("ident", ident);
 //        context.startActivity(intent);
     }
-
-
+    
+    
     /**
      * 显示新闻详情
      *
@@ -523,13 +537,13 @@ public class UIHelper {
         intent.putExtra("news_id", newsId);
         context.startActivity(intent);
     }
-
+    
     public static void showImageZoomDialog(Context context, String imgUrl) {
         Intent intent = new Intent(context, ImageZoomDialog.class);
         intent.putExtra("img_url", imgUrl);
         context.startActivity(intent);
     }
-
+    
     /**
      * 组合动态的动作文本
      *
@@ -602,7 +616,7 @@ public class UIHelper {
         }
         return sp;
     }
-
+    
     /**
      * 组合动态的回复文本
      *
@@ -619,7 +633,7 @@ public class UIHelper {
                 name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return sp;
     }
-
+    
     /**
      * 动态点击跳转到相关新闻、帖子等
      *
@@ -654,7 +668,7 @@ public class UIHelper {
             showUrlRedirect(context, url);
         }
     }
-
+    
     /**
      * 组合消息文本
      *
@@ -682,10 +696,10 @@ public class UIHelper {
             end = start + name.length();
         }
         view.setMovementMethod(LinkMovementMethod.getInstance());
-
+        
         Spannable sp = (Spannable) view.getText();
         URLSpan[] urls = span.getSpans(0, sp.length(), URLSpan.class);
-
+        
         style = new SpannableStringBuilder(view.getText());
         // style.clearSpans();// 这里会清除之前所有的样式
         for (URLSpan url : urls) {
@@ -694,7 +708,7 @@ public class UIHelper {
             style.setSpan(myURLSpan, span.getSpanStart(url),
                     span.getSpanEnd(url), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
-
+        
         // 设置用户名字体加粗、高亮
         style.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start,
                 end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -702,7 +716,7 @@ public class UIHelper {
                 start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(style);
     }
-
+    
     /**
      * 显示留言对话页面
      *
@@ -717,7 +731,7 @@ public class UIHelper {
 //        intent.putExtra("friend_id", friendid);
 //        context.startActivity(intent);
     }
-
+    
     /**
      * 获取TextWatcher对象
      *
@@ -734,16 +748,16 @@ public class UIHelper {
                 ((AppContext) context.getApplication()).setProperty(temlKey,
                         s.toString());
             }
-
+            
             public void beforeTextChanged(CharSequence s, int start, int count,
                                           int after) {
             }
-
+            
             public void afterTextChanged(Editable s) {
             }
         };
     }
-
+    
     /**
      * 编辑器显示保存的草稿
      *
@@ -762,7 +776,7 @@ public class UIHelper {
             editer.setSelection(tempContent.length());// 设置光标位置
         }
     }
-
+    
     /**
      * 将[12]之类的字符串替换为表情
      *
@@ -793,9 +807,10 @@ public class UIHelper {
         }
         return builder;
     }
-
+    
     /**
      * 清除文字
+     *
      * @param cont
      * @param editer
      */
@@ -820,6 +835,7 @@ public class UIHelper {
                 });
         builder.show();
     }
+    
     /**
      * 发送广播-发布动弹
      *
@@ -842,7 +858,7 @@ public class UIHelper {
     /**
      * 添加网页的点击图片展示支持
      */
-    @SuppressLint({ "SetJavaScriptEnabled", "JavascriptInterface" })
+    @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     public static void addWebImageShow(final Context cxt, WebView wv) {
         wv.getSettings().setJavaScriptEnabled(true);
         wv.addJavascriptInterface(new OnWebViewImageListener() {
@@ -854,6 +870,7 @@ public class UIHelper {
             }
         }, "mWebViewImageListener");
     }
+    
     /**
      * 获取webviewClient对象
      *
@@ -868,6 +885,7 @@ public class UIHelper {
             }
         };
     }
+    
     /**
      * 显示首页
      *
@@ -882,12 +900,9 @@ public class UIHelper {
     /**
      * 分享到'新浪微博'或'腾讯微博'的对话框
      *
-     * @param context
-     *            当前Activity
-     * @param title
-     *            分享的标题
-     * @param url
-     *            分享的链接
+     * @param context 当前Activity
+     * @param title   分享的标题
+     * @param url     分享的链接
      */
     public static void showShareDialog(final Activity context,
                                        final String title, final String url) {
@@ -946,12 +961,12 @@ public class UIHelper {
                                     
                                     @SuppressLint("NewApi")
                                     public void onComplete(Bitmap bm) {
-                                        Intent intent = new Intent(context,ScreenShotShare.class);
+                                        Intent intent = new Intent(context, ScreenShotShare.class);
                                         intent.putExtra("title", title);
                                         intent.putExtra("url", url);
                                         intent.putExtra("cut_image_tmp_path", ScreenShotView.TEMP_SHARE_FILE_NAME);
                                         try {
-                                            ImageUtils.saveImageToSD(context,ScreenShotView.TEMP_SHARE_FILE_NAME,bm, 100);
+                                            ImageUtils.saveImageToSD(context, ScreenShotView.TEMP_SHARE_FILE_NAME, bm, 100);
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
@@ -1029,15 +1044,12 @@ public class UIHelper {
     
     /**
      * 评论操作选择框
+     *
      * @param context
-     * @param id
-     *            某条新闻，帖子，动弹的id 或者某条消息的 friendid
-     * @param catalog
-     *            该评论所属类型：1新闻 2帖子 3动弹 4动态
-     * @param comment
-     *            本条评论对象，用于获取评论id&评论者authorid
-     * @param thread
-     *            处理删除评论的线程，若无删除操作传null
+     * @param id      某条新闻，帖子，动弹的id 或者某条消息的 friendid
+     * @param catalog 该评论所属类型：1新闻 2帖子 3动弹 4动态
+     * @param comment 本条评论对象，用于获取评论id&评论者authorid
+     * @param thread  处理删除评论的线程，若无删除操作传null
      */
     public static void showCommentOptionDialog(final Activity context,
                                                final int id, final int catalog, final Comment comment,
@@ -1082,6 +1094,7 @@ public class UIHelper {
     
     /**
      * 显示路径选择对话框
+     *
      * @param context
      */
     public static void showFilePathDialog(Activity context,
@@ -1089,5 +1102,160 @@ public class UIHelper {
         new PathChooseDialog(context, listener).show();
     }
     
+    /**
+     * 收藏操作选择框
+     *
+     * @param context
+     * @param thread
+     */
+    public static void showFavoriteOptionDialog(final Activity context,
+                                                final Thread thread) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.mipmap.ic_dialog_menu);
+        builder.setTitle(context.getString(R.string.select));
+        builder.setItems(R.array.favorite_options,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        switch (arg1) {
+                            case 0:// 删除
+                                thread.start();
+                                break;
+                        }
+                    }
+                });
+        builder.create().show();
+    }
     
+    /**
+     * 博客列表操作
+     *
+     * @param context
+     * @param thread
+     */
+    public static void showBlogOptionDialog(final Context context,
+                                            final Thread thread) {
+        new AlertDialog.Builder(context)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle(context.getString(R.string.delete_blog))
+                .setPositiveButton(R.string.sure,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                if (thread != null)
+                                    thread.start();
+                                else
+                                    ToastMessage(context,
+                                            R.string.msg_noaccess_delete);
+                                dialog.dismiss();
+                            }
+                        })
+                .setNegativeButton(R.string.cancle,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                dialog.dismiss();
+                            }
+                        }).create().show();
+    }
+    
+    /**
+     * 加载显示用户头像
+     *
+     * @param imgFace
+     * @param faceURL
+     */
+    public static void showUserFace(final ImageView imgFace,
+                                    final String faceURL) {
+        showLoadImage(imgFace, faceURL,
+                imgFace.getContext().getString(R.string.msg_load_userface_fail));
+    }
+    
+    /**
+     * 加载显示图片
+     *
+     * @param/ imgFace
+     * @param /faceURL
+     * @param errMsg
+     */
+    public static void showLoadImage(final ImageView imgView,
+                                     final String imgURL, final String errMsg) {
+        // 读取本地图片
+        if (StringUtils.isEmpty(imgURL) || imgURL.endsWith("portrait.gif")) {
+            Bitmap bmp = BitmapFactory.decodeResource(imgView.getResources(),
+                    R.mipmap.widget_dface);
+            imgView.setImageBitmap(bmp);
+            return;
+        }
+        
+        // 是否有缓存图片
+        final String filename = FileUtils.getFileName(imgURL);
+        // Environment.getExternalStorageDirectory();返回/sdcard
+        String filepath = imgView.getContext().getFilesDir() + File.separator
+                + filename;
+        File file = new File(filepath);
+        if (file.exists()) {
+            Bitmap bmp = ImageUtils.getBitmap(imgView.getContext(), filename);
+            imgView.setImageBitmap(bmp);
+            return;
+        }
+        
+        // 从网络获取&写入图片缓存
+        String _errMsg = imgView.getContext().getString(
+                R.string.msg_load_image_fail);
+        if (!StringUtils.isEmpty(errMsg))
+            _errMsg = errMsg;
+        final String ErrMsg = _errMsg;
+        final Handler handler = new Handler() {
+            public void handleMessage(Message msg) {
+                if (msg.what == 1 && msg.obj != null) {
+                    imgView.setImageBitmap((Bitmap) msg.obj);
+                    try {
+                        // 写图片缓存
+                        ImageUtils.saveImage(imgView.getContext(), filename,
+                                (Bitmap) msg.obj);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    ToastMessage(imgView.getContext(), ErrMsg);
+                }
+            }
+        };
+        new Thread() {
+            public void run() {
+                Message msg = new Message();
+                try {
+                    Bitmap bmp = ApiClient.getNetBitmap(imgURL);
+                    msg.what = 1;
+                    msg.obj = bmp;
+                } catch (AppException e) {
+                    e.printStackTrace();
+                    msg.what = -1;
+                    msg.obj = e;
+                }
+                handler.sendMessage(msg);
+            }
+        }.start();
+    }
+    
+    /**
+     * 显示留言回复界面
+     *
+     * @param context
+     * @param friendId
+     *            对方id
+     * @param friendName
+     *            对方名称
+     */
+    public static void showMessagePub(Activity context, int friendId,
+                                      String friendName) {
+        Intent intent = new Intent();
+        intent.putExtra("user_id",
+                ((AppContext) context.getApplication()).getLoginUid());
+        intent.putExtra("friend_id", friendId);
+        intent.putExtra("friend_name", friendName);
+        intent.setClass(context, MessagePub.class);
+        context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
+    }
+
 }

@@ -9,6 +9,8 @@ import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.CommentList;
+import net.oschina.app.bean.FavoriteList;
+import net.oschina.app.bean.FriendList;
 import net.oschina.app.bean.MessageList;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.NewsList;
@@ -24,6 +26,7 @@ import net.oschina.app.bean.TweetList;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.bean.Update;
 import net.oschina.app.bean.User;
+import net.oschina.app.bean.UserInformation;
 import net.oschina.app.bean.WellcomeImage;
 import net.oschina.app.common.FileUtils;
 import net.oschina.app.common.ImageUtils;
@@ -48,6 +51,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,10 +103,8 @@ public class ApiClient {
     private static InputStream http_get(AppContext appContext, String url) throws AppException {
         String cookie = getCookie(appContext);
         String userAgent = getUserAgent(appContext);
-        
         HttpClient httpClient = null;
         GetMethod httpGet = null;
-        
         String responseBody = "";
         int time = 0;
         do {
@@ -875,118 +877,120 @@ public class ApiClient {
     }
     
     public static CommentList getCommentList(AppContext appContext, final int catalog, final int id, final int pageIndex, final int pageSize) throws AppException {
-        String newUrl = _MakeURL(URLs.COMMENT_LIST, new HashMap<String, Object>(){{
+        String newUrl = _MakeURL(URLs.COMMENT_LIST, new HashMap<String, Object>() {{
             put("catalog", catalog);
             put("id", id);
             put("pageIndex", pageIndex);
             put("pageSize", pageSize);
         }});
         
-        try{
+        try {
             return CommentList.parse(http_get(appContext, newUrl));
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
     
     public static Result pubComment(AppContext appContext, int catalog, int id, int uid, String content, int isPostToMyZone) throws AppException {
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("catalog", catalog);
         params.put("id", id);
         params.put("uid", uid);
         params.put("content", content);
         params.put("isPostToMyZone", isPostToMyZone);
         
-        try{
+        try {
             return http_post(appContext, URLs.COMMENT_PUB, params, null);
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
     
     public static Result addFavorite(AppContext appContext, int uid, int objid, int type) throws AppException {
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("uid", uid);
         params.put("objid", objid);
         params.put("type", type);
         
-        try{
+        try {
             return http_post(appContext, URLs.FAVORITE_ADD, params, null);
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
     
     /**
      * 删除评论
-     * @param id 表示被评论对应的某条新闻,帖子,动弹的id 或者某条消息的 friendid
-     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态&留言
-     * @param replyid 表示被回复的单个评论id
+     *
+     * @param id       表示被评论对应的某条新闻,帖子,动弹的id 或者某条消息的 friendid
+     * @param catalog  表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态&留言
+     * @param replyid  表示被回复的单个评论id
      * @param authorid 表示该评论的原始作者id
      * @return
      * @throws AppException
      */
     public static Result delComment(AppContext appContext, int id, int catalog, int replyid, int authorid) throws AppException {
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("id", id);
         params.put("catalog", catalog);
         params.put("replyid", replyid);
         params.put("authorid", authorid);
         
-        try{
+        try {
             return http_post(appContext, URLs.COMMENT_DELETE, params, null);
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
+    
     /**
      * 发表博客评论
-     * @param blog 博客id
-     * @param uid 登陆用户的uid
-     * @param content 评论内容
+     *
+     * @param blog     博客id
+     * @param uid      登陆用户的uid
+     * @param content  评论内容
      * @param reply_id 评论id
-     * @param objuid 被评论的评论发表者的uid
+     * @param objuid   被评论的评论发表者的uid
      * @return
      * @throws AppException
      */
     public static Result replyBlogComment(AppContext appContext, int blog, int uid, String content, int reply_id, int objuid) throws AppException {
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("blog", blog);
         params.put("uid", uid);
         params.put("content", content);
         params.put("reply_id", reply_id);
         params.put("objuid", objuid);
         
-        try{
+        try {
             return http_post(appContext, URLs.BLOGCOMMENT_PUB, params, null);
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
     
     /**
-     *
-     * @param id 表示被评论的某条新闻，帖子，动弹的id 或者某条消息的 friendid
-     * @param catalog 表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态
-     * @param replyid 表示被回复的单个评论id
+     * @param id       表示被评论的某条新闻，帖子，动弹的id 或者某条消息的 friendid
+     * @param catalog  表示该评论所属什么类型：1新闻  2帖子  3动弹  4动态
+     * @param replyid  表示被回复的单个评论id
      * @param authorid 表示该评论的原始作者id
-     * @param uid 用户uid 一般都是当前登录用户uid
-     * @param content 发表评论的内容
+     * @param uid      用户uid 一般都是当前登录用户uid
+     * @param content  发表评论的内容
      * @return
      * @throws AppException
      */
     public static Result replyComment(AppContext appContext, int id, int catalog, int replyid, int authorid, int uid, String content) throws AppException {
-        Map<String,Object> params = new HashMap<String,Object>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("catalog", catalog);
         params.put("id", id);
         params.put("uid", uid);
@@ -994,11 +998,218 @@ public class ApiClient {
         params.put("replyid", replyid);
         params.put("authorid", authorid);
         
-        try{
+        try {
             return http_post(appContext, URLs.COMMENT_REPLY, params, null);
-        }catch(Exception e){
-            if(e instanceof AppException)
-                throw (AppException)e;
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 用户粉丝、关注人列表
+     *
+     * @param uid
+     * @param relation  0:显示自己的粉丝 1:显示自己的关注者
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static FriendList getFriendList(AppContext appContext, final int uid, final int relation, final int pageIndex, final int pageSize) throws AppException {
+        String newUrl = _MakeURL(URLs.FRIENDS_LIST, new HashMap<String, Object>() {{
+            put("uid", uid);
+            put("relation", relation);
+            put("pageIndex", pageIndex);
+            put("pageSize", pageSize);
+        }});
+        try {
+            return FriendList.parse(http_get(appContext, newUrl));
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 用户收藏列表
+     *
+     * @param uid       用户UID
+     * @param type      0:全部收藏 1:软件 2:话题 3:博客 4:新闻 5:代码
+     * @param pageIndex 页面索引 0表示第一页
+     * @param pageSize  每页的数量
+     * @return
+     * @throws AppException
+     */
+    public static FavoriteList getFavoriteList(AppContext appContext, final int uid, final int type, final int pageIndex, final int pageSize) throws AppException {
+        String newUrl = _MakeURL(URLs.FAVORITE_LIST, new HashMap<String, Object>() {{
+            put("uid", uid);
+            put("type", type);
+            put("pageIndex", pageIndex);
+            put("pageSize", pageSize);
+        }});
+        try {
+            return FavoriteList.parse(http_get(appContext, newUrl));
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 删除博客评论
+     *
+     * @param uid      登录用户的uid
+     * @param blogid   博客id
+     * @param replyid  评论id
+     * @param authorid 评论发表者的uid
+     * @param owneruid 博客作者uid
+     * @return
+     * @throws AppException
+     */
+    public static Result delBlogComment(AppContext appContext, int uid, int blogid, int replyid, int authorid, int owneruid) throws AppException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("uid", uid);
+        params.put("blogid", blogid);
+        params.put("replyid", replyid);
+        params.put("authorid", authorid);
+        params.put("owneruid", owneruid);
+        
+        try {
+            return http_post(appContext, URLs.BLOGCOMMENT_DELETE, params, null);
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 删除某用户的博客
+     *
+     * @param uid
+     * @param authoruid
+     * @param id
+     * @return
+     * @throws AppException
+     */
+    public static Result delBlog(AppContext appContext, int uid, int authoruid, int id) throws AppException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("uid", uid);
+        params.put("authoruid", authoruid);
+        params.put("id", id);
+        
+        try {
+            return http_post(appContext, URLs.USERBLOG_DELETE, params, null);
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取用户信息个人专页（包含该用户的动态信息以及个人信息）
+     *
+     * @param uid       自己的uid
+     * @param hisuid    被查看用户的uid
+     * @param hisname   被查看用户的用户名
+     * @param pageIndex 页面索引
+     * @param pageSize  每页读取的动态个数
+     * @return
+     * @throws AppException
+     */
+    public static UserInformation information(AppContext appContext, int uid, int hisuid, String hisname, int pageIndex, int pageSize) throws AppException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("uid", uid);
+        params.put("hisuid", hisuid);
+        params.put("hisname", hisname);
+        params.put("pageIndex", pageIndex);
+        params.put("pageSize", pageSize);
+        
+        try {
+            return UserInformation.parse(_post(appContext, URLs.USER_INFORMATION, params, null));
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 发送留言
+     *
+     * @param uid      登录用户uid
+     * @param receiver 接受者的用户id
+     * @param content  消息内容，注意不能超过250个字符
+     * @return
+     * @throws AppException
+     */
+    public static Result pubMessage(AppContext appContext, int uid, int receiver, String content) throws AppException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("uid", uid);
+        params.put("receiver", receiver);
+        params.put("content", content);
+        
+        try {
+            return http_post(appContext, URLs.MESSAGE_PUB, params, null);
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 更新用户之间关系（加关注、取消关注）
+     *
+     * @param uid         自己的uid
+     * @param hisuid      对方用户的uid
+     * @param newrelation 0:取消对他的关注 1:关注他
+     * @return
+     * @throws AppException
+     */
+    public static Result updateRelation(AppContext appContext, int uid, int hisuid, int newrelation) throws AppException {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("uid", uid);
+        params.put("hisuid", hisuid);
+        params.put("newrelation", newrelation);
+        
+        try {
+            return Result.parse(_post(appContext, URLs.USER_UPDATERELATION, params, null));
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取某用户的博客列表
+     * @param authoruid
+     * @param uid
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static BlogList getUserBlogList(AppContext appContext, final int authoruid, final String authorname, final int uid, final int pageIndex, final int pageSize) throws AppException {
+        String newUrl = _MakeURL(URLs.USERBLOG_LIST, new HashMap<String, Object>() {{
+            put("authoruid", authoruid);
+            put("authorname", URLEncoder.encode(authorname));
+            put("uid", uid);
+            put("pageIndex", pageIndex);
+            put("pageSize", pageSize);
+        }});
+        
+        try {
+            return BlogList.parse(http_get(appContext, newUrl));
+        } catch (Exception e) {
+            if (e instanceof AppException)
+                throw (AppException) e;
             throw AppException.network(e);
         }
     }
