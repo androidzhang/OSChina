@@ -1,4 +1,5 @@
 package net.oschina.app;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +60,7 @@ import net.oschina.app.widget.ScrollLayout;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 public class MainActivity extends BaseActivity {
     public static final int QUICKACTION_LOGIN_OR_LOGOUT = 0;
     public static final int QUICKACTION_USERINFO = 1;
@@ -86,21 +88,21 @@ public class MainActivity extends BaseActivity {
     private QuickActionWidget mGrid;// 快捷栏控件
     private ListViewNewsAdapter lvNewsAdapter;
     private ListViewBlogAdapter lvBlogAdapter;
-
+    
     private ListViewQuestionAdapter lvQuestionAdapter;
-
+    
     private ListViewTweetAdapter lvTweetAdapter;
     private ListViewActiveAdapter lvActiveAdapter;
     private ListViewMessageAdapter lvMsgAdapter;
-
+    
     private List<News> lvNewsData = new ArrayList<News>();
     private List<Blog> lvBlogData = new ArrayList<Blog>();
     private List<Post> lvQuestionData = new ArrayList<Post>();
     private List<Tweet> lvTweetData = new ArrayList<Tweet>();
     private List<Active> lvActiveData = new ArrayList<Active>();
     private List<Messages> lvMsgData = new ArrayList<Messages>();
-
-
+    
+    
     private View lvNews_footer;
     private TextView lvNews_foot_more;
     private ProgressBar lvNews_foot_progress;
@@ -125,7 +127,7 @@ public class MainActivity extends BaseActivity {
     private int lvMsgSumData;
     private int curQuestionCatalog;
     private int mViewCount;
-
+    
     private PullToRefreshListView lvTweet;
     private PullToRefreshListView lvNews;
     private PullToRefreshListView lvBlog;
@@ -138,16 +140,16 @@ public class MainActivity extends BaseActivity {
     private TextView lvActive_foot_more;
     private TextView lvMsg_foot_more;
     private boolean isClearNotice = false;
-
+    
     private Button framebtn_Active_atme;
     private Button framebtn_News_lastest;
     private Button framebtn_News_blog;
     private Button framebtn_Active_comment;
     private Button framebtn_Active_message;
-    private BadgeView bv_active;
-    private BadgeView bv_atme;
-    private BadgeView bv_review;
-    private BadgeView bv_message;
+    public static BadgeView bv_active;
+    public static BadgeView bv_atme;
+    public static BadgeView bv_review;
+    public static BadgeView bv_message;
     private Button framebtn_News_recommend;
     private Button framebtn_Question_ask;
     private Button framebtn_Question_share;
@@ -159,11 +161,11 @@ public class MainActivity extends BaseActivity {
     private Button framebtn_Tweet_my;
     private Button framebtn_Active_lastest;
     private Button framebtn_Active_myself;
-
+    
     private ScrollLayout mScrollLayout;
     private String[] mHeadTitles;
     private RadioButton[] mButtons;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,7 +182,7 @@ public class MainActivity extends BaseActivity {
             UIHelper.ToastMessage(this, R.string.network_not_connected);
         // 初始化登录
         appContext.initLoginInfo();
-
+        
         this.initHeadView();
         this.initFootBar();
         this.initPageScroll();
@@ -188,19 +190,19 @@ public class MainActivity extends BaseActivity {
         this.initBadgeView();
         this.initQuickActionGrid();
         this.initFrameListView();
-
+        
         // 检查新版本
         if (appContext.isCheckUp()) {
             UpdateManager.getUpdateManager().checkAppUpdate(this, false);
         }
-
+        
         // 启动轮询通知信息
         this.foreachUserNotice();
         // 检查是否需要下载欢迎图片
         this.checkBackGround();
-
+        
     }
-
+    
     private void checkBackGround() {
         if (!appContext.isNetworkConnected()) {
             return;
@@ -216,7 +218,7 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     /**
      * 轮询通知信息
      */
@@ -253,7 +255,7 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     //初始化所有listview
     private void initFrameListView() {
         // 初始化listview控件
@@ -265,12 +267,12 @@ public class MainActivity extends BaseActivity {
         this.initMsgListView();
         // 加载listview数据
         this.initFrameListViewData();
-
+        
     }
-
+    
     //初始化所有ListView数据
     private void initFrameListViewData() {
-
+        
         // 初始化Handler
         lvNewsHandler = this.getLvHandler(lvNews, lvNewsAdapter,
                 lvNews_foot_more, lvNews_foot_progress, AppContext.PAGE_SIZE);
@@ -286,16 +288,16 @@ public class MainActivity extends BaseActivity {
                 AppContext.PAGE_SIZE);
         lvMsgHandler = this.getLvHandler(lvMsg, lvMsgAdapter, lvMsg_foot_more,
                 lvMsg_foot_progress, AppContext.PAGE_SIZE);
-
+        
         // 加载资讯数据
         if (lvNewsData.isEmpty()) {
             loadLvNewsData(curNewsCatalog, 0, lvNewsHandler,
                     UIHelper.LISTVIEW_ACTION_INIT);
         }
-
-
+        
+        
     }
-
+    
     /**
      * 线程加载新闻数据
      *
@@ -331,7 +333,7 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     /**
      * 获取listview的初始化Handler
      *
@@ -348,7 +350,7 @@ public class MainActivity extends BaseActivity {
                     // listview数据处理
                     Notice notice = handleLvData(msg.what, msg.obj, msg.arg2,
                             msg.arg1);
-
+                    
                     if (msg.what < pageSize) {
                         lv.setTag(UIHelper.LISTVIEW_DATA_FULL);
                         adapter.notifyDataSetChanged();
@@ -357,7 +359,7 @@ public class MainActivity extends BaseActivity {
                         lv.setTag(UIHelper.LISTVIEW_DATA_MORE);
                         adapter.notifyDataSetChanged();
                         more.setText(R.string.load_more);
-
+                        
                         // 特殊处理-热门动弹不能翻页
                         if (lv == lvTweet) {
                             TweetList tlist = (TweetList) msg.obj;
@@ -400,8 +402,10 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
+    
     /**
      * 通知信息处理
+     *
      * @param type 1:@我的信息 2:未读消息 3:评论个数 4:新粉丝个数
      */
     private void ClearNotice(final int type) {
@@ -434,8 +438,8 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
-
+    
+    
     /**
      * listview数据处理
      *
@@ -742,33 +746,33 @@ public class MainActivity extends BaseActivity {
         }
         return notice;
     }
-
-
+    
+    
     private void initMsgListView() {
-
-
+        
+        
     }
-
+    
     private void initActiveListView() {
-
-
+        
+        
     }
-
+    
     private void initTweetListView() {
-
-
+        
+        
     }
-
+    
     private void initQuestionListView() {
-
-
+        
+        
     }
-
+    
     private void initBlogListView() {
-
-
+        
+        
     }
-
+    
     //初始化新聞列表
     private void initNewsListView() {
         lvNewsAdapter = new ListViewNewsAdapter(this, lvNewsData,
@@ -800,10 +804,10 @@ public class MainActivity extends BaseActivity {
                     return;
                 // 跳转到新闻详情
                 UIHelper.showNewsRedirect(view.getContext(), news);
-
+                
             }
         });
-
+        
         lvNews.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -830,7 +834,7 @@ public class MainActivity extends BaseActivity {
                             UIHelper.LISTVIEW_ACTION_SCROLL);
                 }
             }
-
+            
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 lvNews.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
@@ -841,12 +845,12 @@ public class MainActivity extends BaseActivity {
             public void onRefresh() {
                 loadLvNewsData(curNewsCatalog, 0, lvNewsHandler,
                         UIHelper.LISTVIEW_ACTION_REFRESH);
-
-
+                
+                
             }
         });
     }
-
+    
     private void initQuickActionGrid() {
         mGrid = new QuickActionGrid(this);
         mGrid.addQuickAction(new MyQuickAction(this, R.mipmap.ic_menu_login,
@@ -861,12 +865,12 @@ public class MainActivity extends BaseActivity {
                 R.mipmap.ic_menu_setting, R.string.main_menu_setting));
         mGrid.addQuickAction(new MyQuickAction(this, R.mipmap.ic_menu_exit,
                 R.string.main_menu_exit));
-
+        
         mGrid.setOnQuickActionClickListener(mActionListener);
-
-
+        
+        
     }
-
+    
     /**
      * 初始化通知信息标签控件
      */
@@ -877,21 +881,21 @@ public class MainActivity extends BaseActivity {
         bv_active.setGravity(Gravity.CENTER);
         bv_active.setTextSize(8f);
         bv_active.setTextColor(Color.WHITE);
-
+        
         bv_atme = new BadgeView(this, framebtn_Active_atme);
         bv_atme.setBackgroundResource(R.mipmap.widget_count_bg);
         bv_atme.setIncludeFontPadding(false);
         bv_atme.setGravity(Gravity.CENTER);
         bv_atme.setTextSize(8f);
         bv_atme.setTextColor(Color.WHITE);
-
+        
         bv_review = new BadgeView(this, framebtn_Active_comment);
         bv_review.setBackgroundResource(R.mipmap.widget_count_bg);
         bv_review.setIncludeFontPadding(false);
         bv_review.setGravity(Gravity.CENTER);
         bv_review.setTextSize(8f);
         bv_review.setTextColor(Color.WHITE);
-
+        
         bv_message = new BadgeView(this, framebtn_Active_message);
         bv_message.setBackgroundResource(R.mipmap.widget_count_bg);
         bv_message.setIncludeFontPadding(false);
@@ -899,11 +903,11 @@ public class MainActivity extends BaseActivity {
         bv_message.setTextSize(8f);
         bv_message.setTextColor(Color.WHITE);
     }
-
-
+    
+    
     private void initFrameButton() {
-
-
+        
+        
         // 初始化按钮控件
         framebtn_News_lastest = (Button) findViewById(R.id.frame_btn_news_lastest);
         framebtn_News_blog = (Button) findViewById(R.id.frame_btn_news_blog);
@@ -957,11 +961,11 @@ public class MainActivity extends BaseActivity {
                     UIHelper.showLoginDialog(MainActivity.this);
                     return;
                 }
-
+                
                 framebtn_Tweet_lastest.setEnabled(true);
                 framebtn_Tweet_hot.setEnabled(true);
                 framebtn_Tweet_my.setEnabled(false);
-
+                
                 curTweetCatalog = uid;
                 loadLvTweetData(curTweetCatalog, 0, lvTweetHandler,
                         UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
@@ -981,9 +985,9 @@ public class MainActivity extends BaseActivity {
         // 特殊处理
         framebtn_Active_atme.setText("@"
                 + getString(R.string.frame_title_active_atme));
-
+        
     }
-
+    
     private View.OnClickListener frameActiveBtnClick(final Button btn,
                                                      final int catalog) {
         return new View.OnClickListener() {
@@ -1002,13 +1006,13 @@ public class MainActivity extends BaseActivity {
                     UIHelper.showLoginDialog(MainActivity.this);
                     return;
                 }
-
+                
                 frameActiveBtnOnClick(btn, catalog,
                         UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
             }
         };
     }
-
+    
     private void frameActiveBtnOnClick(Button btn, int catalog, int action) {
         if (btn == framebtn_Active_lastest)
             framebtn_Active_lastest.setEnabled(false);
@@ -1030,7 +1034,7 @@ public class MainActivity extends BaseActivity {
             framebtn_Active_message.setEnabled(false);
         else
             framebtn_Active_message.setEnabled(true);
-
+        
         // 是否处理通知信息
         if (btn == framebtn_Active_atme && bv_atme.isShown()) {
             action = UIHelper.LISTVIEW_ACTION_REFRESH;
@@ -1045,22 +1049,22 @@ public class MainActivity extends BaseActivity {
             this.isClearNotice = true;
             this.curClearNoticeType = Notice.TYPE_MESSAGE;
         }
-
+        
         // 非留言展示动态列表
         if (btn != framebtn_Active_message) {
             lvActive.setVisibility(View.VISIBLE);
             lvMsg.setVisibility(View.GONE);
-
+            
             curActiveCatalog = catalog;
             loadLvActiveData(curActiveCatalog, 0, lvActiveHandler, action);
         } else {
             lvActive.setVisibility(View.GONE);
             lvMsg.setVisibility(View.VISIBLE);
-
+            
             loadLvMsgData(0, lvMsgHandler, action);
         }
     }
-
+    
     /**
      * 线程加载留言数据
      *
@@ -1094,8 +1098,8 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
-
+    
+    
     private View.OnClickListener frameTweetBtnClick(final Button btn,
                                                     final int catalog) {
         return new View.OnClickListener() {
@@ -1112,15 +1116,15 @@ public class MainActivity extends BaseActivity {
                     framebtn_Tweet_my.setEnabled(false);
                 else
                     framebtn_Tweet_my.setEnabled(true);
-
+                
                 curTweetCatalog = catalog;
                 loadLvTweetData(curTweetCatalog, 0, lvTweetHandler,
                         UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
             }
         };
     }
-
-
+    
+    
     private View.OnClickListener frameQuestionBtnClick(final Button btn,
                                                        final int catalog) {
         return new View.OnClickListener() {
@@ -1145,14 +1149,14 @@ public class MainActivity extends BaseActivity {
                     framebtn_Question_site.setEnabled(false);
                 else
                     framebtn_Question_site.setEnabled(true);
-
+                
                 curQuestionCatalog = catalog;
                 loadLvQuestionData(curQuestionCatalog, 0, lvQuestionHandler,
                         UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
             }
         };
     }
-
+    
     /**
      * 线程加载帖子数据
      *
@@ -1188,8 +1192,8 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
-
+    
+    
     private View.OnClickListener frameNewsBtnClick(final Button btn,
                                                    final int catalog) {
         return new View.OnClickListener() {
@@ -1209,27 +1213,27 @@ public class MainActivity extends BaseActivity {
                 } else {
                     framebtn_News_recommend.setEnabled(true);
                 }
-
+                
                 curNewsCatalog = catalog;
-
+                
                 // 非新闻列表
                 if (btn == framebtn_News_lastest) {
                     lvNews.setVisibility(View.VISIBLE);
                     lvBlog.setVisibility(View.GONE);
-
+                    
                     loadLvNewsData(curNewsCatalog, 0, lvNewsHandler,
                             UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
                 } else {
                     lvNews.setVisibility(View.GONE);
                     lvBlog.setVisibility(View.VISIBLE);
-
+                    
                     loadLvBlogData(curNewsCatalog, 0, lvBlogHandler,
                             UIHelper.LISTVIEW_ACTION_CHANGE_CATALOG);
                 }
             }
         };
     }
-
+    
     /**
      * 线程加载博客数据
      *
@@ -1274,15 +1278,15 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     //初始化底部
     private void initFootBar() {
-
+        
         fbNews = (RadioButton) findViewById(R.id.main_footbar_news);
         fbQuestion = (RadioButton) findViewById(R.id.main_footbar_question);
         fbTweet = (RadioButton) findViewById(R.id.main_footbar_tweet);
         fbactive = (RadioButton) findViewById(R.id.main_footbar_active);
-
+        
         fbSetting = (ImageView) findViewById(R.id.main_footbar_setting);
         fbSetting.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -1292,21 +1296,21 @@ public class MainActivity extends BaseActivity {
                 mGrid.show(v);
             }
         });
-
-
+        
+        
     }
-
+    
     /**
      * 初始化水平滚动翻页
      */
     private void initPageScroll() {
         mScrollLayout = (ScrollLayout) findViewById(R.id.main_scrolllayout);
-
+        
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.main_linearlayout_footer);
         mHeadTitles = getResources().getStringArray(R.array.head_titles);
         mViewCount = mScrollLayout.getChildCount();
         mButtons = new RadioButton[mViewCount];
-
+        
         for (int i = 0; i < mViewCount; i++) {
             mButtons[i] = (RadioButton) linearLayout.getChildAt(i * 2);
             mButtons[i].setTag(i);
@@ -1342,7 +1346,7 @@ public class MainActivity extends BaseActivity {
             });
         }
     }
-
+    
     //初始化头部view
     private void initHeadView() {
         mHeadLogo = (ImageView) findViewById(R.id.main_head_logo);
@@ -1351,7 +1355,7 @@ public class MainActivity extends BaseActivity {
         mHead_search = (ImageButton) findViewById(R.id.main_head_search);
         mHeadPub_post = (ImageButton) findViewById(R.id.main_head_pub_post);
         mHeadPub_tweet = (ImageButton) findViewById(R.id.main_head_pub_tweet);
-
+        
         mHead_search.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 UIHelper.showSearch(v.getContext());
@@ -1367,11 +1371,11 @@ public class MainActivity extends BaseActivity {
                 UIHelper.showTweetPub(MainActivity.this);
             }
         });
-
-
+        
+        
     }
-
-
+    
+    
     /**
      * 快捷栏item点击事件
      */
@@ -1399,7 +1403,7 @@ public class MainActivity extends BaseActivity {
             }
         }
     };
-
+    
     class TweetReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -1413,25 +1417,25 @@ public class MainActivity extends BaseActivity {
                         UIHelper.sendBroadCast(context, res.getNotice());
                     }
                     // 发完动弹后-刷新最新动弹、我的动弹&最新动态(当前界面必须是动弹|动态)
-
-
+                    
+                    
                     if (curTweetCatalog >= 0 && mCurSel == 2) {
                         loadLvTweetData(curTweetCatalog, 0, lvTweetHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
                     } else if (curActiveCatalog == ActiveList.CATALOG_LASTEST && mCurSel == 3) {
-
+                        
                         loadLvActiveData(curActiveCatalog, 0, lvActiveHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
                     }
-
-
+                    
+                    
                 }
-
-
+                
+                
             }
-
+            
         }
     }
-
-
+    
+    
     /**
      * 线程加载动态数据
      *
@@ -1466,7 +1470,7 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     /**
      * 线程加载动弹数据
      *
@@ -1502,33 +1506,33 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(tweetReceiver);
     }
-
+    
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean flag = true;
-
-
+        
+        
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             //是否退出應用
             return clickExitHelper.onKeyDown(keyCode, event);
         } else if (keyCode == KeyEvent.KEYCODE_MENU) {
             // 展示快捷栏&判断是否登录
-
-
+            
+            
         } else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
-
+            
         } else {
-
+            
             flag = super.onKeyDown(keyCode, event);
         }
-
-
+        
+        
         return flag;
     }
 }

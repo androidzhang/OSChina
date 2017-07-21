@@ -16,6 +16,8 @@ import net.oschina.app.R;
 import net.oschina.app.api.ApiClient;
 import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
+import net.oschina.app.bean.Blog;
+import net.oschina.app.bean.BlogCommentList;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.FavoriteList;
@@ -26,6 +28,7 @@ import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
+import net.oschina.app.bean.Report;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
 import net.oschina.app.bean.SoftwareCatalogList;
@@ -1354,5 +1357,134 @@ public class AppContext extends Application {
         return list;
     }
     
+    /**
+     * 博客详情
+     * @param blog_id
+     * @return
+     * @throws AppException
+     */
+    public Blog getBlog(int blog_id, boolean isRefresh) throws AppException {
+        Blog blog = null;
+        String key = "blog_"+blog_id;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                blog = ApiClient.getBlogDetail(this, blog_id);
+                if(blog != null){
+                    Notice notice = blog.getNotice();
+                    blog.setNotice(null);
+                    blog.setCacheKey(key);
+                    saveObject(blog, key);
+                    blog.setNotice(notice);
+                }
+            }catch(AppException e){
+                blog = (Blog)readObject(key);
+                if(blog == null)
+                    throw e;
+            }
+        } else {
+            blog = (Blog)readObject(key);
+            if(blog == null)
+                blog = new Blog();
+        }
+        return blog;
+    }
+    /**
+     * 博客评论列表
+     * @param id 博客Id
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public BlogCommentList getBlogCommentList(int id, int pageIndex, boolean isRefresh) throws AppException {
+        BlogCommentList list = null;
+        String key = "blogcommentlist_"+id+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                list = ApiClient.getBlogCommentList(this, id, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (BlogCommentList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (BlogCommentList)readObject(key);
+            if(list == null)
+                list = new BlogCommentList();
+        }
+        return list;
+    }
+    
+    /**
+     * 发表博客评论
+     * @param blog 博客id
+     * @param uid 登陆用户的uid
+     * @param content 评论内容
+     * @return
+     * @throws AppException
+     */
+    public Result pubBlogComment(int blog, int uid, String content) throws AppException {
+        return ApiClient.pubBlogComment(this, blog, uid, content);
+    }
+    
+    /**
+     * 转发留言
+     * @param uid 登录用户uid
+     * @param receiver 接受者的用户名
+     * @param content 消息内容，注意不能超过250个字符
+     * @return
+     * @throws AppException
+     */
+    public Result forwardMessage(int uid, String receiver, String content) throws AppException {
+        return ApiClient.forwardMessage(this, uid, receiver, content);
+    }
+    
+    /**
+     * 读取帖子详情
+     * @param post_id
+     * @return
+     * @throws /ApiException
+     */
+    public Post getPost(int post_id, boolean isRefresh) throws AppException {
+        Post post = null;
+        String key = "post_"+post_id;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                post = ApiClient.getPostDetail(this, post_id);
+                if(post != null){
+                    Notice notice = post.getNotice();
+                    post.setNotice(null);
+                    post.setCacheKey(key);
+                    saveObject(post, key);
+                    post.setNotice(notice);
+                }
+            }catch(AppException e){
+                post = (Post)readObject(key);
+                if(post == null)
+                    throw e;
+            }
+        } else {
+            post = (Post)readObject(key);
+            if(post == null)
+                post = new Post();
+        }
+        return post;
+    }
+    
+    /**
+     * 举报讨论区帖子
+     * @param report
+     * @return
+     * @throws AppException
+     */
+    public String report(Report report) throws AppException {
+        return ApiClient.report(this, report);
+    }
 }
 	

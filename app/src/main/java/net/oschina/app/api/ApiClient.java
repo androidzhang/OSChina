@@ -7,6 +7,8 @@ import net.oschina.app.AppException;
 import net.oschina.app.application.AppContext;
 import net.oschina.app.bean.ActiveList;
 import net.oschina.app.bean.Barcode;
+import net.oschina.app.bean.Blog;
+import net.oschina.app.bean.BlogCommentList;
 import net.oschina.app.bean.BlogList;
 import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.FavoriteList;
@@ -17,6 +19,7 @@ import net.oschina.app.bean.NewsList;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Post;
 import net.oschina.app.bean.PostList;
+import net.oschina.app.bean.Report;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
 import net.oschina.app.bean.SoftwareCatalogList;
@@ -1213,4 +1216,139 @@ public class ApiClient {
             throw AppException.network(e);
         }
     }
+    
+    /**
+     * 获取博客详情
+     * @param blog_id
+     * @return
+     * @throws AppException
+     */
+    public static Blog getBlogDetail(AppContext appContext, final int blog_id) throws AppException {
+        String newUrl = _MakeURL(URLs.BLOG_DETAIL, new HashMap<String, Object>(){{
+            put("id", blog_id);
+        }});
+        
+        try{
+            return Blog.parse(http_get(appContext, newUrl));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取博客评论列表
+     * @param id 博客id
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     * @throws AppException
+     */
+    public static BlogCommentList getBlogCommentList(AppContext appContext, final int id, final int pageIndex, final int pageSize) throws AppException {
+        String newUrl = _MakeURL(URLs.BLOGCOMMENT_LIST, new HashMap<String, Object>(){{
+            put("id", id);
+            put("pageIndex", pageIndex);
+            put("pageSize", pageSize);
+        }});
+        
+        try{
+            return BlogCommentList.parse(http_get(appContext, newUrl));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 发表博客评论
+     * @param blog 博客id
+     * @param uid 登陆用户的uid
+     * @param content 评论内容
+     * @return
+     * @throws AppException
+     */
+    public static Result pubBlogComment(AppContext appContext, int blog, int uid, String content) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("blog", blog);
+        params.put("uid", uid);
+        params.put("content", content);
+        
+        try{
+            return http_post(appContext, URLs.BLOGCOMMENT_PUB, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 转发留言
+     * @param uid 登录用户uid
+     * @param /receiver 接受者的用户名
+     * @param content 消息内容，注意不能超过250个字符
+     * @return
+     * @throws AppException
+     */
+    public static Result forwardMessage(AppContext appContext, int uid, String receiverName, String content) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", uid);
+        params.put("receiverName", receiverName);
+        params.put("content", content);
+        
+        try{
+            return http_post(appContext, URLs.MESSAGE_PUB, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取帖子的详情
+     * @param /url
+     * @param post_id
+     * @return
+     * @throws AppException
+     */
+    public static Post getPostDetail(AppContext appContext, final int post_id) throws AppException {
+        String newUrl = _MakeURL(URLs.POST_DETAIL, new HashMap<String, Object>(){{
+            put("id", post_id);
+        }});
+        try{
+            return Post.parse(http_get(appContext, newUrl));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    /**
+     * 发送举报
+     * @param appContext
+     * @param report
+     * @return
+     * @throws AppException
+     */
+    public static String report(AppContext appContext, Report report) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("obj_id", report.getReportId());
+        params.put("url", report.getLinkAddress());
+        params.put("obj_type", report.getReason());
+        if (report.getOtherReason() != null) {
+            params.put("memo", report.getOtherReason());
+        } else {
+            params.put("memo", "其他原因");
+        }
+        try{
+            return StringUtils.toConvertString(_post(appContext, URLs.REPORT, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
 }

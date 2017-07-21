@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -27,12 +28,17 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +56,8 @@ import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.CommentPub;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.Notice;
+import net.oschina.app.bean.Post;
+import net.oschina.app.bean.Report;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.URLs;
@@ -59,9 +67,13 @@ import net.oschina.app.ui.CaptureActivity;
 import net.oschina.app.ui.FeedBack;
 import net.oschina.app.ui.ImageZoomDialog;
 import net.oschina.app.ui.LoginDialog;
+import net.oschina.app.ui.MessageDetail;
+import net.oschina.app.ui.MessageForward;
 import net.oschina.app.ui.MessagePub;
 import net.oschina.app.ui.NewsDetail;
+import net.oschina.app.ui.QuestionDetail;
 import net.oschina.app.ui.QuestionPub;
+import net.oschina.app.ui.ReportUi;
 import net.oschina.app.ui.ScreenShotShare;
 import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
@@ -118,6 +130,7 @@ public class UIHelper {
             + "img.alignleft {float:left;max-width:120px;margin:0 10px 5px 0;border:1px solid #ccc;background:#fff;padding:2px;} "
             + "pre {font-size:9pt;line-height:12pt;font-family:Courier New,Arial;border:1px solid #ddd;border-left:5px solid #6CE26C;background:#f6f6f6;padding:5px;overflow: auto;} "
             + "a.tag {font-size:15px;text-decoration:none;background-color:#bbd6f3;border-bottom:2px solid #3E6D8E;border-right:2px solid #7F9FB6;color:#284a7b;margin:2px 2px 2px 0;padding:2px 4px;white-space:nowrap;}</style>";
+    private static final String TAG = "zlx";
     /**
      * 表情图片匹配
      */
@@ -1257,5 +1270,126 @@ public class UIHelper {
         intent.setClass(context, MessagePub.class);
         context.startActivityForResult(intent, REQUEST_CODE_FOR_RESULT);
     }
-
+    
+    
+    /**
+     * 消息详情操作选择框
+     *
+     * @param context
+     * @param msg
+     * @param thread
+     */
+    public static void showMessageDetailOptionDialog(final Activity context,
+                                                     final Comment msg, final Thread thread) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.mipmap.ic_dialog_menu);
+        builder.setTitle(context.getString(R.string.select));
+        builder.setItems(R.array.message_detail_options,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        switch (arg1) {
+                            case 0:// 转发
+                                showMessageForward(context, msg.getAuthor(),
+                                        msg.getContent());
+                                break;
+                            case 1:// 删除
+                                thread.start();
+                                break;
+                        }
+                    }
+                });
+        builder.create().show();
+    }
+    
+    
+    /**
+     * 显示转发留言界面
+     *
+     * @param context
+     * @param friendName
+     *            对方名称
+     * @param messageContent
+     *            留言内容
+     */
+    public static void showMessageForward(Activity context, String friendName,
+                                          String messageContent) {
+        Intent intent = new Intent();
+        intent.putExtra("user_id",
+                ((AppContext) context.getApplication()).getLoginUid());
+        intent.putExtra("friend_name", friendName);
+        intent.putExtra("message_content", messageContent);
+        intent.setClass(context, MessageForward.class);
+        context.startActivity(intent);
+    }
+    
+    @SuppressWarnings("deprecation")
+    public static void showQuestionOption(final Activity context, View aim, final Post postDetail) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View mMenuView = inflater.inflate(R.layout.widget_bar_option_menu, null);
+        int w = context.getWindowManager().getDefaultDisplay().getWidth();
+        final PopupWindow option = new PopupWindow(mMenuView, w/2 - 50, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        option.setOutsideTouchable(true);
+        option.setAnimationStyle(R.style.popupMenu);
+        ColorDrawable dw = new ColorDrawable(000000);
+        option.setBackgroundDrawable(dw);
+        View.OnClickListener click = new View.OnClickListener() {
+            public void onClick(View v) {
+                int id = v.getId();
+                switch (id) {
+                    case R.id.question_option_share:
+                        Log.i(TAG, postDetail.getBody());
+                        showShareDialog(context, postDetail.getTitle(), postDetail.getUrl());
+                        break;
+                    case R.id.question_option_report:
+                        AppContext ac = (AppContext) context.getApplication();
+                        if(!ac.isLogin()){
+                            UIHelper.showLoginDialog(context);
+                            return;
+                        }
+                        showReport(context, postDetail.getUrl());
+                        break;
+                    default:
+                        break;
+                }
+                option.dismiss();
+            }
+        };
+        LinearLayout mShare = (LinearLayout) mMenuView.findViewById(R.id.question_option_share);
+        mShare.setOnClickListener(click);
+        LinearLayout mReport = (LinearLayout) mMenuView.findViewById(R.id.question_option_report);
+        mReport.setOnClickListener(click);
+        //mMenuView添加OnTouchListener监听判断获取触屏位置如果在选择框外面则销毁弹出框
+        mMenuView.setOnTouchListener(new View.OnTouchListener() {
+            
+            public boolean onTouch(View v, MotionEvent event) {
+                
+                int height = mMenuView.findViewById(R.id.pop_layout).getTop();
+                int y=(int) event.getY();
+                
+                if(event.getAction()==MotionEvent.ACTION_UP){
+                    if(y<height){
+                        option.dismiss();
+                    }
+                }
+                return true;
+            }
+        });
+        if (option.isShowing()) {
+            option.dismiss();
+        } else {
+            option.showAsDropDown(aim, -10, 0);
+        }
+    }
+    
+    /**
+     * 显示用户举报
+     * @param context
+     * @param link
+     */
+    public static void showReport(Context context, String link) {
+        Intent intent = new Intent(context, ReportUi.class);
+        intent.putExtra(Report.REPORT_LINK, link);
+        context.startActivity(intent);
+    }
 }
