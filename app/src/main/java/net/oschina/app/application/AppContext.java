@@ -31,6 +31,7 @@ import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Report;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.Software;
 import net.oschina.app.bean.SoftwareCatalogList;
 import net.oschina.app.bean.SoftwareList;
 import net.oschina.app.bean.Tweet;
@@ -1486,5 +1487,104 @@ public class AppContext extends Application {
     public String report(Report report) throws AppException {
         return ApiClient.report(this, report);
     }
+    
+    
+    /**
+     * 软件详情
+     * @param /soft_id
+     * @return
+     * @throws AppException
+     */
+    public Software getSoftware(String ident, boolean isRefresh) throws AppException {
+        Software soft = null;
+        String key = "software_"+(URLEncoder.encode(ident));
+        if(isNetworkConnected() && (isCacheDataFailure(key) || isRefresh)) {
+            try{
+                soft = ApiClient.getSoftwareDetail(this, ident);
+                if(soft != null){
+                    Notice notice = soft.getNotice();
+                    soft.setNotice(null);
+                    soft.setCacheKey(key);
+                    saveObject(soft, key);
+                    soft.setNotice(notice);
+                }
+            }catch(AppException e){
+                soft = (Software)readObject(key);
+                if(soft == null)
+                    throw e;
+            }
+        } else {
+            soft = (Software)readObject(key);
+            if(soft == null)
+                soft = new Software();
+        }
+        return soft;
+    }
+    /**
+     * 获取动弹详情
+     * @param tweet_id
+     * @return
+     * @throws AppException
+     */
+    public Tweet getTweet(int tweet_id, boolean isRefresh) throws AppException {
+        Tweet tweet = null;
+        String key = "tweet_"+tweet_id;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                tweet = ApiClient.getTweetDetail(this, tweet_id);
+                if(tweet != null){
+                    Notice notice = tweet.getNotice();
+                    tweet.setNotice(null);
+                    tweet.setCacheKey(key);
+                    saveObject(tweet, key);
+                    tweet.setNotice(notice);
+                }
+            }catch(AppException e){
+                tweet = (Tweet)readObject(key);
+                if(tweet == null)
+                    throw e;
+            }
+        } else {
+            tweet = (Tweet)readObject(key);
+            if(tweet == null)
+                tweet = new Tweet();
+        }
+        return tweet;
+    }
+    
+    
+    /**
+     * Tag相关帖子列表
+     * @param tag
+     * @param pageIndex
+     * @return
+     * @throws /ApiException
+     */
+    public PostList getPostListByTag(String tag, int pageIndex, boolean isRefresh) throws AppException {
+        PostList list = null;
+        String key = "postlist_"+(URLEncoder.encode(tag))+"_"+pageIndex+"_"+PAGE_SIZE;
+        if(isNetworkConnected() && (!isReadDataCache(key) || isRefresh)) {
+            try{
+                list = ApiClient.getPostListByTag(this, tag, pageIndex, PAGE_SIZE);
+                if(list != null && pageIndex == 0){
+                    Notice notice = list.getNotice();
+                    list.setNotice(null);
+                    list.setCacheKey(key);
+                    saveObject(list, key);
+                    list.setNotice(notice);
+                }
+            }catch(AppException e){
+                list = (PostList)readObject(key);
+                if(list == null)
+                    throw e;
+            }
+        } else {
+            list = (PostList)readObject(key);
+            if(list == null)
+                list = new PostList();
+        }
+        return list;
+    }
+    
 }
 	

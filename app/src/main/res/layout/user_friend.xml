@@ -44,7 +44,8 @@
 				android:id="@+id/friend_type_follower"
 				style="@style/frame_button"
 	         	android:text="@string/user_friend_follower"/>
-	       	<ImageView android:layout_width="wrap_content" android:layout_height="fill_parent" android:background="@drawable/frame_button_cutline"/>
+	       	<ImageView android:layout_width="wrap_content"
+					   android:layout_height="fill_parent" android:background="@mipmap/frame_button_cutline"/>
 	       	<Button 
 		        android:id="@+id/friend_type_fans"
 				style="@style/frame_button"

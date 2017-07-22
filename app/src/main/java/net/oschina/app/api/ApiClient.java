@@ -22,6 +22,7 @@ import net.oschina.app.bean.PostList;
 import net.oschina.app.bean.Report;
 import net.oschina.app.bean.Result;
 import net.oschina.app.bean.SearchList;
+import net.oschina.app.bean.Software;
 import net.oschina.app.bean.SoftwareCatalogList;
 import net.oschina.app.bean.SoftwareList;
 import net.oschina.app.bean.Tweet;
@@ -1351,4 +1352,64 @@ public class ApiClient {
         }
     }
     
+    /**
+     * 获取软件详情
+     * @param ident
+     * @return
+     * @throws AppException
+     */
+    public static Software getSoftwareDetail(AppContext appContext, final String ident) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("ident", ident);
+        
+        try{
+            return Software.parse(_post(appContext, URLs.SOFTWARE_DETAIL, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 获取动弹详情
+     * @param tweet_id
+     * @return
+     * @throws AppException
+     */
+    public static Tweet getTweetDetail(AppContext appContext, final int tweet_id) throws AppException {
+        String newUrl = _MakeURL(URLs.TWEET_DETAIL, new HashMap<String, Object>(){{
+            put("id", tweet_id);
+        }});
+        try{
+            return Tweet.parse(http_get(appContext, newUrl));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 通过Tag获取帖子列表
+     * @param /url
+     * @param /catalog
+     * @param pageIndex
+     * @return
+     * @throws AppException
+     */
+    public static PostList getPostListByTag(AppContext appContext, final String tag, final int pageIndex, final int pageSize) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("tag", tag);
+        params.put("pageIndex", pageIndex);
+        params.put("pageSize", pageSize);
+        
+        try{
+            return PostList.parse(_post(appContext, URLs.POST_LIST, params, null));
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
 }
