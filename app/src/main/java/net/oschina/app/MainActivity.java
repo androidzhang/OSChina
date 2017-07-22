@@ -165,6 +165,11 @@ public class MainActivity extends BaseActivity {
     private ScrollLayout mScrollLayout;
     private String[] mHeadTitles;
     private RadioButton[] mButtons;
+    private View lvBlog_footer;
+    private View lvQuestion_footer;
+    private View lvTweet_footer;
+    private View lvActive_footer;
+    private View lvMsg_footer;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -748,28 +753,537 @@ public class MainActivity extends BaseActivity {
     }
     
     
+    /**
+     * 初始化留言列表
+     */
     private void initMsgListView() {
-        
-        
+        lvMsgAdapter = new ListViewMessageAdapter(this, lvMsgData,
+                R.layout.message_listitem);
+        lvMsg_footer = getLayoutInflater().inflate(R.layout.listview_footer,
+                null);
+        lvMsg_foot_more = (TextView) lvMsg_footer
+                .findViewById(R.id.listview_foot_more);
+        lvMsg_foot_progress = (ProgressBar) lvMsg_footer
+                .findViewById(R.id.listview_foot_progress);
+        lvMsg = (PullToRefreshListView) findViewById(R.id.frame_listview_message);
+        lvMsg.addFooterView(lvMsg_footer);// 添加底部视图 必须在setAdapter前
+        lvMsg.setAdapter(lvMsgAdapter);
+        lvMsg.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvMsg_footer)
+                    return;
+                
+                Messages msg = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    msg = (Messages) view.getTag();
+                } else {
+                    TextView tv = (TextView) view
+                            .findViewById(R.id.message_listitem_username);
+                    msg = (Messages) tv.getTag();
+                }
+                if (msg == null)
+                    return;
+                
+                // 跳转到留言详情
+                UIHelper.showMessageDetail(view.getContext(),
+                        msg.getFriendId(), msg.getFriendName());
+            }
+        });
+        lvMsg.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                lvMsg.onScrollStateChanged(view, scrollState);
+                
+                // 数据为空--不用继续下面代码了
+                if (lvMsgData.isEmpty())
+                    return;
+                
+                // 判断是否滚动到底部
+                boolean scrollEnd = false;
+                try {
+                    if (view.getPositionForView(lvMsg_footer) == view
+                            .getLastVisiblePosition())
+                        scrollEnd = true;
+                } catch (Exception e) {
+                    scrollEnd = false;
+                }
+                
+                int lvDataState = StringUtils.toInt(lvMsg.getTag());
+                if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
+                    lvMsg.setTag(UIHelper.LISTVIEW_DATA_LOADING);
+                    lvMsg_foot_more.setText(R.string.load_ing);
+                    lvMsg_foot_progress.setVisibility(View.VISIBLE);
+                    // 当前pageIndex
+                    int pageIndex = lvMsgSumData / AppContext.PAGE_SIZE;
+                    loadLvMsgData(pageIndex, lvMsgHandler,
+                            UIHelper.LISTVIEW_ACTION_SCROLL);
+                }
+            }
+            
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                lvMsg.onScroll(view, firstVisibleItem, visibleItemCount,
+                        totalItemCount);
+            }
+        });
+        lvMsg.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> parent, View view,
+                                           int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvMsg_footer)
+                    return false;
+                
+                Messages _msg = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    _msg = (Messages) view.getTag();
+                } else {
+                    TextView tv = (TextView) view
+                            .findViewById(R.id.message_listitem_username);
+                    _msg = (Messages) tv.getTag();
+                }
+                if (_msg == null)
+                    return false;
+                
+                final Messages message = _msg;
+                
+                // 选择操作
+                final Handler handler = new Handler() {
+                    public void handleMessage(Message msg) {
+                        if (msg.what == 1) {
+                            Result res = (Result) msg.obj;
+                            if (res.OK()) {
+                                lvMsgData.remove(message);
+                                lvMsgAdapter.notifyDataSetChanged();
+                            }
+                            UIHelper.ToastMessage(MainActivity.this,
+                                    res.getErrorMessage());
+                        } else {
+                            ((AppException) msg.obj).makeToast(MainActivity.this);
+                        }
+                    }
+                };
+                Thread thread = new Thread() {
+                    public void run() {
+                        Message msg = new Message();
+                        try {
+                            Result res = appContext.delMessage(
+                                    appContext.getLoginUid(),
+                                    message.getFriendId());
+                            msg.what = 1;
+                            msg.obj = res;
+                        } catch (AppException e) {
+                            e.printStackTrace();
+                            msg.what = -1;
+                            msg.obj = e;
+                        }
+                        handler.sendMessage(msg);
+                    }
+                };
+                UIHelper.showMessageListOptionDialog(MainActivity.this, message, thread);
+                return true;
+            }
+        });
+        lvMsg.setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
+            public void onRefresh() {
+                // 清除通知信息
+                if (bv_message.isShown()) {
+                    isClearNotice = true;
+                    curClearNoticeType = Notice.TYPE_MESSAGE;
+                }
+                // 刷新数据
+                loadLvMsgData(0, lvMsgHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
+            }
+        });
     }
     
+    /**
+     * 初始化动态列表
+     */
     private void initActiveListView() {
-        
-        
+        lvActiveAdapter = new ListViewActiveAdapter(this, lvActiveData,
+                R.layout.active_listitem);
+        lvActive_footer = getLayoutInflater().inflate(R.layout.listview_footer,
+                null);
+        lvActive_foot_more = (TextView) lvActive_footer
+                .findViewById(R.id.listview_foot_more);
+        lvActive_foot_progress = (ProgressBar) lvActive_footer
+                .findViewById(R.id.listview_foot_progress);
+        lvActive = (PullToRefreshListView) findViewById(R.id.frame_listview_active);
+        lvActive.addFooterView(lvActive_footer);// 添加底部视图 必须在setAdapter前
+        lvActive.setAdapter(lvActiveAdapter);
+        lvActive.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvActive_footer)
+                    return;
+                
+                Active active = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    active = (Active) view.getTag();
+                } else {
+                    TextView tv = (TextView) view
+                            .findViewById(R.id.active_listitem_username);
+                    active = (Active) tv.getTag();
+                }
+                if (active == null)
+                    return;
+                
+                // 跳转
+                UIHelper.showActiveRedirect(view.getContext(), active);
+            }
+        });
+        lvActive.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                lvActive.onScrollStateChanged(view, scrollState);
+                
+                // 数据为空--不用继续下面代码了
+                if (lvActiveData.isEmpty())
+                    return;
+                
+                // 判断是否滚动到底部
+                boolean scrollEnd = false;
+                try {
+                    if (view.getPositionForView(lvActive_footer) == view
+                            .getLastVisiblePosition())
+                        scrollEnd = true;
+                } catch (Exception e) {
+                    scrollEnd = false;
+                }
+                
+                int lvDataState = StringUtils.toInt(lvActive.getTag());
+                if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
+                    lvActive.setTag(UIHelper.LISTVIEW_DATA_LOADING);
+                    lvActive_foot_more.setText(R.string.load_ing);
+                    lvActive_foot_progress.setVisibility(View.VISIBLE);
+                    // 当前pageIndex
+                    int pageIndex = lvActiveSumData / AppContext.PAGE_SIZE;
+                    loadLvActiveData(curActiveCatalog, pageIndex,
+                            lvActiveHandler, UIHelper.LISTVIEW_ACTION_SCROLL);
+                }
+            }
+            
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                lvActive.onScroll(view, firstVisibleItem, visibleItemCount,
+                        totalItemCount);
+            }
+        });
+        lvActive.setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
+            public void onRefresh() {
+                // 处理通知信息
+                if (curActiveCatalog == ActiveList.CATALOG_ATME
+                        && bv_atme.isShown()) {
+                    isClearNotice = true;
+                    curClearNoticeType = Notice.TYPE_ATME;
+                } else if (curActiveCatalog == ActiveList.CATALOG_COMMENT
+                        && bv_review.isShown()) {
+                    isClearNotice = true;
+                    curClearNoticeType = Notice.TYPE_COMMENT;
+                }
+                // 刷新数据
+                loadLvActiveData(curActiveCatalog, 0, lvActiveHandler,
+                        UIHelper.LISTVIEW_ACTION_REFRESH);
+            }
+        });
     }
-    
+    //初始化动弹列表
     private void initTweetListView() {
+        lvTweetAdapter = new ListViewTweetAdapter(this, lvTweetData,R.layout.tweet_listitem);
+        lvTweet_footer = getLayoutInflater().inflate(R.layout.listview_footer,null);
+        lvTweet_foot_more = (TextView) lvTweet_footer.findViewById(R.id.listview_foot_more);
+        lvTweet_foot_progress = (ProgressBar) lvTweet_footer.findViewById(R.id.listview_foot_progress);
+        lvTweet = (PullToRefreshListView) findViewById(R.id.frame_listview_tweet);
+        lvTweet.addFooterView(lvTweet_footer);// 添加底部视图 必须在setAdapter前
+        lvTweet.setAdapter(lvTweetAdapter);
+        lvTweet.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, final View view,
+                                    int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvTweet_footer)
+                    return;
+            
+                Tweet tweet = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    tweet = (Tweet) view.getTag();
+                } else {
+                    TextView tv = (TextView) view
+                            .findViewById(R.id.tweet_listitem_username);
+                    tweet = (Tweet) tv.getTag();
+                }
+                if (tweet == null)
+                    return;
+                // 跳转到动弹详情&评论页面
+                UIHelper.showTweetDetail(view.getContext(), tweet.getId());
+            }
+        });
+        lvTweet.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                lvTweet.onScrollStateChanged(view, scrollState);
+            
+                // 数据为空--不用继续下面代码了
+                if (lvTweetData.isEmpty())
+                    return;
+            
+                // 判断是否滚动到底部
+                boolean scrollEnd = false;
+                try {
+                    if (view.getPositionForView(lvTweet_footer) == view.getLastVisiblePosition())
+                        scrollEnd = true;
+                } catch (Exception e) {
+                    scrollEnd = false;
+                }
+            
+                int lvDataState = StringUtils.toInt(lvTweet.getTag());
+                if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
+                    lvTweet.setTag(UIHelper.LISTVIEW_DATA_LOADING);
+                    lvTweet_foot_more.setText(R.string.load_ing);
+                    lvTweet_foot_progress.setVisibility(View.VISIBLE);
+                    // 当前pageIndex
+                    int pageIndex = lvTweetSumData / AppContext.PAGE_SIZE;
+                    loadLvTweetData(curTweetCatalog, pageIndex, lvTweetHandler,UIHelper.LISTVIEW_ACTION_SCROLL);
+                }
+            }
         
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                lvTweet.onScroll(view, firstVisibleItem, visibleItemCount,
+                        totalItemCount);
+            }
+        });
+        lvTweet.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            public boolean onItemLongClick(AdapterView<?> parent, View view,
+                                           int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvTweet_footer)
+                    return false;
+            
+                Tweet _tweet = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    _tweet = (Tweet) view.getTag();
+                } else {
+                    TextView tv = (TextView) view.findViewById(R.id.tweet_listitem_username);
+                    _tweet = (Tweet) tv.getTag();
+                }
+                if (_tweet == null)
+                    return false;
+            
+                final Tweet tweet = _tweet;
+            
+                // 删除操作
+                // if(appContext.getLoginUid() == tweet.getAuthorId()) {
+                final Handler handler = new Handler() {
+                    public void handleMessage(Message msg) {
+                        if (msg.what == 1) {
+                            Result res = (Result) msg.obj;
+                            if (res.OK()) {
+                                lvTweetData.remove(tweet);
+                                lvTweetAdapter.notifyDataSetChanged();
+                            }
+                            UIHelper.ToastMessage(MainActivity.this,
+                                    res.getErrorMessage());
+                        } else {
+                            ((AppException) msg.obj).makeToast(MainActivity.this);
+                        }
+                    }
+                };
+                Thread thread = new Thread() {
+                    public void run() {
+                        Message msg = new Message();
+                        try {
+                            Result res = appContext.delTweet(
+                                    appContext.getLoginUid(), tweet.getId());
+                            msg.what = 1;
+                            msg.obj = res;
+                        } catch (AppException e) {
+                            e.printStackTrace();
+                            msg.what = -1;
+                            msg.obj = e;
+                        }
+                        handler.sendMessage(msg);
+                    }
+                };
+                UIHelper.showTweetOptionDialog(MainActivity.this, thread);
+                // } else {
+                // UIHelper.showTweetOptionDialog(Main.this, null);
+                // }
+                return true;
+            }
+        });
+        lvTweet.setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
+            public void onRefresh() {
+                loadLvTweetData(curTweetCatalog, 0, lvTweetHandler,
+                        UIHelper.LISTVIEW_ACTION_REFRESH);
+            }
+        });
         
     }
     
     private void initQuestionListView() {
+        lvQuestionAdapter = new ListViewQuestionAdapter(this, lvQuestionData,
+                R.layout.question_listitem);
+        lvQuestion_footer = getLayoutInflater().inflate(
+                R.layout.listview_footer, null);
+        lvQuestion_foot_more = (TextView) lvQuestion_footer
+                .findViewById(R.id.listview_foot_more);
+        lvQuestion_foot_progress = (ProgressBar) lvQuestion_footer
+                .findViewById(R.id.listview_foot_progress);
+        lvQuestion = (PullToRefreshListView) findViewById(R.id.frame_listview_question);
+        lvQuestion.addFooterView(lvQuestion_footer);// 添加底部视图 必须在setAdapter前
+        lvQuestion.setAdapter(lvQuestionAdapter);
+        lvQuestion
+                .setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
+                        // 点击头部、底部栏无效
+                        if (position == 0 || view == lvQuestion_footer)
+                            return;
+                    
+                        Post post = null;
+                        // 判断是否是TextView
+                        if (view instanceof TextView) {
+                            post = (Post) view.getTag();
+                        } else {
+                            TextView tv = (TextView) view
+                                    .findViewById(R.id.question_listitem_title);
+                            post = (Post) tv.getTag();
+                        }
+                        if (post == null)
+                            return;
+                    
+                        // 跳转到问答详情
+                        UIHelper.showQuestionDetail(view.getContext(),
+                                post.getId());
+                    }
+                });
+        lvQuestion.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                lvQuestion.onScrollStateChanged(view, scrollState);
+            
+                // 数据为空--不用继续下面代码了
+                if (lvQuestionData.isEmpty())
+                    return;
+            
+                // 判断是否滚动到底部
+                boolean scrollEnd = false;
+                try {
+                    if (view.getPositionForView(lvQuestion_footer) == view
+                            .getLastVisiblePosition())
+                        scrollEnd = true;
+                } catch (Exception e) {
+                    scrollEnd = false;
+                }
+            
+                int lvDataState = StringUtils.toInt(lvQuestion.getTag());
+                if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
+                    lvQuestion.setTag(UIHelper.LISTVIEW_DATA_LOADING);
+                    lvQuestion_foot_more.setText(R.string.load_ing);
+                    lvQuestion_foot_progress.setVisibility(View.VISIBLE);
+                    // 当前pageIndex
+                    int pageIndex = lvQuestionSumData / AppContext.PAGE_SIZE;
+                    loadLvQuestionData(curQuestionCatalog, pageIndex,lvQuestionHandler, UIHelper.LISTVIEW_ACTION_SCROLL);
+                
+                }
+            }
         
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                lvQuestion.onScroll(view, firstVisibleItem, visibleItemCount,totalItemCount);
+            
+            }
+        });
+        lvQuestion
+                .setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
+                    public void onRefresh() {
+                        loadLvQuestionData(curQuestionCatalog, 0,lvQuestionHandler,UIHelper.LISTVIEW_ACTION_REFRESH);
+                    
+                    }
+                });
         
     }
     
     private void initBlogListView() {
+        lvBlogAdapter = new ListViewBlogAdapter(this, BlogList.CATALOG_LATEST,
+                lvBlogData, R.layout.blog_listitem);
+        lvBlog_footer = getLayoutInflater().inflate(R.layout.listview_footer,
+                null);
+        lvBlog_foot_more = (TextView) lvBlog_footer
+                .findViewById(R.id.listview_foot_more);
+        lvBlog_foot_progress = (ProgressBar) lvBlog_footer
+                .findViewById(R.id.listview_foot_progress);
+        lvBlog = (PullToRefreshListView) findViewById(R.id.frame_listview_blog);
+        lvBlog.addFooterView(lvBlog_footer);// 添加底部视图 必须在setAdapter前
+        lvBlog.setAdapter(lvBlogAdapter);
+        lvBlog.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // 点击头部、底部栏无效
+                if (position == 0 || view == lvBlog_footer)
+                    return;
+                Blog blog = null;
+                // 判断是否是TextView
+                if (view instanceof TextView) {
+                    blog = (Blog) view.getTag();
+                } else {
+                    TextView tv = (TextView) view
+                            .findViewById(R.id.blog_listitem_title);
+                    blog = (Blog) tv.getTag();
+                }
+                if (blog == null)
+                    return;
+            
+                // 跳转到博客详情
+                UIHelper.showUrlRedirect(view.getContext(), blog.getUrl());
+            }
+        });
+        lvBlog.setOnScrollListener(new AbsListView.OnScrollListener() {
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                lvBlog.onScrollStateChanged(view, scrollState);
+            
+                // 数据为空--不用继续下面代码了
+                if (lvBlogData.isEmpty())
+                    return;
+            
+                // 判断是否滚动到底部
+                boolean scrollEnd = false;
+                try {
+                    if (view.getPositionForView(lvBlog_footer) == view
+                            .getLastVisiblePosition())
+                        scrollEnd = true;
+                } catch (Exception e) {
+                    scrollEnd = false;
+                }
+            
+                int lvDataState = StringUtils.toInt(lvBlog.getTag());
+                if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
+                    lvBlog.setTag(UIHelper.LISTVIEW_DATA_LOADING);
+                    lvBlog_foot_more.setText(R.string.load_ing);
+                    lvBlog_foot_progress.setVisibility(View.VISIBLE);
+                    // 当前pageIndex
+                    int pageIndex = lvBlogSumData / AppContext.PAGE_SIZE;
+                    loadLvBlogData(curNewsCatalog, pageIndex, lvBlogHandler,
+                            UIHelper.LISTVIEW_ACTION_SCROLL);
+                }
+            }
         
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                lvBlog.onScroll(view, firstVisibleItem, visibleItemCount,
+                        totalItemCount);
+            }
+        });
+        lvBlog.setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
+            public void onRefresh() {
+                loadLvBlogData(curNewsCatalog, 0, lvBlogHandler,
+                        UIHelper.LISTVIEW_ACTION_REFRESH);
+            }
+        });
         
     }
     
@@ -983,8 +1497,7 @@ public class MainActivity extends BaseActivity {
         framebtn_Active_message.setOnClickListener(frameActiveBtnClick(
                 framebtn_Active_message, 0));
         // 特殊处理
-        framebtn_Active_atme.setText("@"
-                + getString(R.string.frame_title_active_atme));
+        framebtn_Active_atme.setText("@" + getString(R.string.frame_title_active_atme));
         
     }
     

@@ -1412,4 +1412,46 @@ public class ApiClient {
             throw AppException.network(e);
         }
     }
+    /**
+     * 删除动弹
+     * @param uid
+     * @param tweetid
+     * @return
+     * @throws AppException
+     */
+    public static Result delTweet(AppContext appContext, int uid, int tweetid) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", uid);
+        params.put("tweetid", tweetid);
+        
+        try{
+            return http_post(appContext, URLs.TWEET_DELETE, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
+    /**
+     * 删除留言
+     * @param uid 登录用户uid
+     * @param friendid 留言者id
+     * @return
+     * @throws AppException
+     */
+    public static Result delMessage(AppContext appContext, int uid, int friendid) throws AppException {
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("uid", uid);
+        params.put("friendid", friendid);
+        
+        try{
+            return http_post(appContext, URLs.MESSAGE_DELETE, params, null);
+        }catch(Exception e){
+            if(e instanceof AppException)
+                throw (AppException)e;
+            throw AppException.network(e);
+        }
+    }
+    
 }

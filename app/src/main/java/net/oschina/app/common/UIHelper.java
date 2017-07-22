@@ -54,6 +54,7 @@ import net.oschina.app.bean.Active;
 import net.oschina.app.bean.Comment;
 import net.oschina.app.bean.CommentList;
 import net.oschina.app.bean.CommentPub;
+import net.oschina.app.bean.Messages;
 import net.oschina.app.bean.News;
 import net.oschina.app.bean.Notice;
 import net.oschina.app.bean.Post;
@@ -1392,4 +1393,69 @@ public class UIHelper {
         intent.putExtra(Report.REPORT_LINK, link);
         context.startActivity(intent);
     }
+    
+    /**
+     * 动弹操作选择框
+     * @param context
+     * @param thread
+     */
+    public static void showTweetOptionDialog(final Context context,
+                                             final Thread thread) {
+        new AlertDialog.Builder(context)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setTitle(context.getString(R.string.delete_tweet))
+                .setPositiveButton(R.string.sure,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                if (thread != null)
+                                    thread.start();
+                                else
+                                    ToastMessage(context,
+                                            R.string.msg_noaccess_delete);
+                                dialog.dismiss();
+                            }
+                        })
+                .setNegativeButton(R.string.cancle,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                dialog.dismiss();
+                            }
+                        }).create().show();
+    }
+    
+    /**
+     * 消息列表操作选择框
+     *
+     * @param context
+     * @param msg
+     * @param thread
+     */
+    public static void showMessageListOptionDialog(final Activity context,
+                                                   final Messages msg, final Thread thread) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setIcon(R.mipmap.ic_dialog_menu);
+        builder.setTitle(context.getString(R.string.select));
+        builder.setItems(R.array.message_list_options,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        switch (arg1) {
+                            case 0:// 回复
+                                showMessagePub(context, msg.getFriendId(),
+                                        msg.getFriendName());
+                                break;
+                            case 1:// 转发
+                                showMessageForward(context, msg.getFriendName(),
+                                        msg.getContent());
+                                break;
+                            case 2:// 删除
+                                thread.start();
+                                break;
+                        }
+                    }
+                });
+        builder.create().show();
+    }
+    
 }

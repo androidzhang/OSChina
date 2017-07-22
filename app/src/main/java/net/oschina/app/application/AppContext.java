@@ -1586,5 +1586,28 @@ public class AppContext extends Application {
         return list;
     }
     
+    /**
+     * 删除动弹
+     * @param uid
+     * @param tweetid
+     * @return
+     * @throws AppException
+     */
+    public Result delTweet(int uid, int tweetid) throws AppException {
+        return ApiClient.delTweet(this, uid, tweetid);
+    }
+    
+    
+    /**
+     * 删除留言
+     * @param uid 登录用户uid
+     * @param friendid 留言者id
+     * @return
+     * @throws AppException
+     */
+    public Result delMessage(int uid, int friendid) throws AppException {
+        return ApiClient.delMessage(this, uid, friendid);
+    }
+    
 }
 	
