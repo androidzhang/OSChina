@@ -64,6 +64,7 @@ import net.oschina.app.bean.Tweet;
 import net.oschina.app.bean.URLs;
 import net.oschina.app.ui.About;
 import net.oschina.app.ui.BaseActivity;
+import net.oschina.app.ui.BlogDetail;
 import net.oschina.app.ui.CaptureActivity;
 import net.oschina.app.ui.FeedBack;
 import net.oschina.app.ui.ImageZoomDialog;
@@ -74,11 +75,14 @@ import net.oschina.app.ui.MessagePub;
 import net.oschina.app.ui.NewsDetail;
 import net.oschina.app.ui.QuestionDetail;
 import net.oschina.app.ui.QuestionPub;
+import net.oschina.app.ui.QuestionTag;
 import net.oschina.app.ui.ReportUi;
 import net.oschina.app.ui.ScreenShotShare;
 import net.oschina.app.ui.Search;
 import net.oschina.app.ui.Setting;
+import net.oschina.app.ui.SoftwareDetail;
 import net.oschina.app.ui.SoftwareLib;
+import net.oschina.app.ui.TweetDetail;
 import net.oschina.app.ui.TweetPub;
 import net.oschina.app.ui.UserCenter;
 import net.oschina.app.ui.UserFavorite;
@@ -452,9 +456,9 @@ public class UIHelper {
      * @param tweetId
      */
     public static void showTweetDetail(Context context, int tweetId) {
-//        Intent intent = new Intent(context, TweetDetail.class);
-//        intent.putExtra("tweet_id", tweetId);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, TweetDetail.class);
+        intent.putExtra("tweet_id", tweetId);
+        context.startActivity(intent);
     }
     
     /**
@@ -467,10 +471,10 @@ public class UIHelper {
      */
     public static void showUserCenter(Context context, int hisuid,
                                       String hisname) {
-//        Intent intent = new Intent(context, UserCenter.class);
-//        intent.putExtra("his_id", hisuid);
-//        intent.putExtra("his_name", hisname);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, UserCenter.class);
+        intent.putExtra("his_id", hisuid);
+        intent.putExtra("his_name", hisname);
+        context.startActivity(intent);
     }
     
     /**
@@ -480,9 +484,9 @@ public class UIHelper {
      * @param tag
      */
     public static void showQuestionListByTag(Context context, String tag) {
-//        Intent intent = new Intent(context, QuestionTag.class);
-//        intent.putExtra("post_tag", tag);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, QuestionTag.class);
+        intent.putExtra("post_tag", tag);
+        context.startActivity(intent);
     }
     
     /**
@@ -509,9 +513,9 @@ public class UIHelper {
      * @param blogId
      */
     public static void showBlogDetail(Context context, int blogId) {
-//        Intent intent = new Intent(context, BlogDetail.class);
-//        intent.putExtra("blog_id", blogId);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, BlogDetail.class);
+        intent.putExtra("blog_id", blogId);
+        context.startActivity(intent);
     }
     
     /**
@@ -521,9 +525,9 @@ public class UIHelper {
      * @param postId
      */
     public static void showQuestionDetail(Context context, int postId) {
-//        Intent intent = new Intent(context, QuestionDetail.class);
-//        intent.putExtra("post_id", postId);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, QuestionDetail.class);
+        intent.putExtra("post_id", postId);
+        context.startActivity(intent);
     }
     
     
@@ -534,9 +538,9 @@ public class UIHelper {
      * @param ident
      */
     public static void showSoftwareDetail(Context context, String ident) {
-//        Intent intent = new Intent(context, SoftwareDetail.class);
-//        intent.putExtra("ident", ident);
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, SoftwareDetail.class);
+        intent.putExtra("ident", ident);
+        context.startActivity(intent);
     }
     
     

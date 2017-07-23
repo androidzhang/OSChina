@@ -991,10 +991,11 @@ public class MainActivity extends BaseActivity {
             }
         });
     }
+    
     //初始化动弹列表
     private void initTweetListView() {
-        lvTweetAdapter = new ListViewTweetAdapter(this, lvTweetData,R.layout.tweet_listitem);
-        lvTweet_footer = getLayoutInflater().inflate(R.layout.listview_footer,null);
+        lvTweetAdapter = new ListViewTweetAdapter(this, lvTweetData, R.layout.tweet_listitem);
+        lvTweet_footer = getLayoutInflater().inflate(R.layout.listview_footer, null);
         lvTweet_foot_more = (TextView) lvTweet_footer.findViewById(R.id.listview_foot_more);
         lvTweet_foot_progress = (ProgressBar) lvTweet_footer.findViewById(R.id.listview_foot_progress);
         lvTweet = (PullToRefreshListView) findViewById(R.id.frame_listview_tweet);
@@ -1006,7 +1007,7 @@ public class MainActivity extends BaseActivity {
                 // 点击头部、底部栏无效
                 if (position == 0 || view == lvTweet_footer)
                     return;
-            
+                
                 Tweet tweet = null;
                 // 判断是否是TextView
                 if (view instanceof TextView) {
@@ -1025,11 +1026,11 @@ public class MainActivity extends BaseActivity {
         lvTweet.setOnScrollListener(new AbsListView.OnScrollListener() {
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 lvTweet.onScrollStateChanged(view, scrollState);
-            
+                
                 // 数据为空--不用继续下面代码了
                 if (lvTweetData.isEmpty())
                     return;
-            
+                
                 // 判断是否滚动到底部
                 boolean scrollEnd = false;
                 try {
@@ -1038,7 +1039,7 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     scrollEnd = false;
                 }
-            
+                
                 int lvDataState = StringUtils.toInt(lvTweet.getTag());
                 if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
                     lvTweet.setTag(UIHelper.LISTVIEW_DATA_LOADING);
@@ -1046,10 +1047,10 @@ public class MainActivity extends BaseActivity {
                     lvTweet_foot_progress.setVisibility(View.VISIBLE);
                     // 当前pageIndex
                     int pageIndex = lvTweetSumData / AppContext.PAGE_SIZE;
-                    loadLvTweetData(curTweetCatalog, pageIndex, lvTweetHandler,UIHelper.LISTVIEW_ACTION_SCROLL);
+                    loadLvTweetData(curTweetCatalog, pageIndex, lvTweetHandler, UIHelper.LISTVIEW_ACTION_SCROLL);
                 }
             }
-        
+            
             public void onScroll(AbsListView view, int firstVisibleItem,
                                  int visibleItemCount, int totalItemCount) {
                 lvTweet.onScroll(view, firstVisibleItem, visibleItemCount,
@@ -1062,7 +1063,7 @@ public class MainActivity extends BaseActivity {
                 // 点击头部、底部栏无效
                 if (position == 0 || view == lvTweet_footer)
                     return false;
-            
+                
                 Tweet _tweet = null;
                 // 判断是否是TextView
                 if (view instanceof TextView) {
@@ -1073,9 +1074,9 @@ public class MainActivity extends BaseActivity {
                 }
                 if (_tweet == null)
                     return false;
-            
+                
                 final Tweet tweet = _tweet;
-            
+                
                 // 删除操作
                 // if(appContext.getLoginUid() == tweet.getAuthorId()) {
                 final Handler handler = new Handler() {
@@ -1144,7 +1145,7 @@ public class MainActivity extends BaseActivity {
                         // 点击头部、底部栏无效
                         if (position == 0 || view == lvQuestion_footer)
                             return;
-                    
+                        
                         Post post = null;
                         // 判断是否是TextView
                         if (view instanceof TextView) {
@@ -1156,7 +1157,6 @@ public class MainActivity extends BaseActivity {
                         }
                         if (post == null)
                             return;
-                    
                         // 跳转到问答详情
                         UIHelper.showQuestionDetail(view.getContext(),
                                 post.getId());
@@ -1165,11 +1165,11 @@ public class MainActivity extends BaseActivity {
         lvQuestion.setOnScrollListener(new AbsListView.OnScrollListener() {
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 lvQuestion.onScrollStateChanged(view, scrollState);
-            
+                
                 // 数据为空--不用继续下面代码了
                 if (lvQuestionData.isEmpty())
                     return;
-            
+                
                 // 判断是否滚动到底部
                 boolean scrollEnd = false;
                 try {
@@ -1179,7 +1179,7 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     scrollEnd = false;
                 }
-            
+                
                 int lvDataState = StringUtils.toInt(lvQuestion.getTag());
                 if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
                     lvQuestion.setTag(UIHelper.LISTVIEW_DATA_LOADING);
@@ -1187,22 +1187,22 @@ public class MainActivity extends BaseActivity {
                     lvQuestion_foot_progress.setVisibility(View.VISIBLE);
                     // 当前pageIndex
                     int pageIndex = lvQuestionSumData / AppContext.PAGE_SIZE;
-                    loadLvQuestionData(curQuestionCatalog, pageIndex,lvQuestionHandler, UIHelper.LISTVIEW_ACTION_SCROLL);
-                
+                    loadLvQuestionData(curQuestionCatalog, pageIndex, lvQuestionHandler, UIHelper.LISTVIEW_ACTION_SCROLL);
+                    
                 }
             }
-        
+            
             public void onScroll(AbsListView view, int firstVisibleItem,
                                  int visibleItemCount, int totalItemCount) {
-                lvQuestion.onScroll(view, firstVisibleItem, visibleItemCount,totalItemCount);
-            
+                lvQuestion.onScroll(view, firstVisibleItem, visibleItemCount, totalItemCount);
+                
             }
         });
         lvQuestion
                 .setOnRefreshListener(new PullToRefreshListView.OnRefreshListener() {
                     public void onRefresh() {
-                        loadLvQuestionData(curQuestionCatalog, 0,lvQuestionHandler,UIHelper.LISTVIEW_ACTION_REFRESH);
-                    
+                        loadLvQuestionData(curQuestionCatalog, 0, lvQuestionHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
+                        
                     }
                 });
         
@@ -1237,7 +1237,7 @@ public class MainActivity extends BaseActivity {
                 }
                 if (blog == null)
                     return;
-            
+                
                 // 跳转到博客详情
                 UIHelper.showUrlRedirect(view.getContext(), blog.getUrl());
             }
@@ -1245,11 +1245,11 @@ public class MainActivity extends BaseActivity {
         lvBlog.setOnScrollListener(new AbsListView.OnScrollListener() {
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 lvBlog.onScrollStateChanged(view, scrollState);
-            
+                
                 // 数据为空--不用继续下面代码了
                 if (lvBlogData.isEmpty())
                     return;
-            
+                
                 // 判断是否滚动到底部
                 boolean scrollEnd = false;
                 try {
@@ -1259,7 +1259,7 @@ public class MainActivity extends BaseActivity {
                 } catch (Exception e) {
                     scrollEnd = false;
                 }
-            
+                
                 int lvDataState = StringUtils.toInt(lvBlog.getTag());
                 if (scrollEnd && lvDataState == UIHelper.LISTVIEW_DATA_MORE) {
                     lvBlog.setTag(UIHelper.LISTVIEW_DATA_LOADING);
@@ -1271,7 +1271,7 @@ public class MainActivity extends BaseActivity {
                             UIHelper.LISTVIEW_ACTION_SCROLL);
                 }
             }
-        
+            
             public void onScroll(AbsListView view, int firstVisibleItem,
                                  int visibleItemCount, int totalItemCount) {
                 lvBlog.onScroll(view, firstVisibleItem, visibleItemCount,
@@ -1379,10 +1379,7 @@ public class MainActivity extends BaseActivity {
                 R.mipmap.ic_menu_setting, R.string.main_menu_setting));
         mGrid.addQuickAction(new MyQuickAction(this, R.mipmap.ic_menu_exit,
                 R.string.main_menu_exit));
-        
         mGrid.setOnQuickActionClickListener(mActionListener);
-        
-        
     }
     
     /**
@@ -1417,11 +1414,7 @@ public class MainActivity extends BaseActivity {
         bv_message.setTextSize(8f);
         bv_message.setTextColor(Color.WHITE);
     }
-    
-    
     private void initFrameButton() {
-        
-        
         // 初始化按钮控件
         framebtn_News_lastest = (Button) findViewById(R.id.frame_btn_news_lastest);
         framebtn_News_blog = (Button) findViewById(R.id.frame_btn_news_blog);
@@ -1525,7 +1518,6 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
-    
     private void frameActiveBtnOnClick(Button btn, int catalog, int action) {
         if (btn == framebtn_Active_lastest)
             framebtn_Active_lastest.setEnabled(false);
@@ -1577,10 +1569,8 @@ public class MainActivity extends BaseActivity {
             loadLvMsgData(0, lvMsgHandler, action);
         }
     }
-    
     /**
      * 线程加载留言数据
-     *
      * @param pageIndex 当前页数
      * @param handler
      * @param action
@@ -1611,8 +1601,6 @@ public class MainActivity extends BaseActivity {
             }
         }.start();
     }
-    
-    
     private View.OnClickListener frameTweetBtnClick(final Button btn,
                                                     final int catalog) {
         return new View.OnClickListener() {
@@ -1636,8 +1624,6 @@ public class MainActivity extends BaseActivity {
             }
         };
     }
-    
-    
     private View.OnClickListener frameQuestionBtnClick(final Button btn,
                                                        final int catalog) {
         return new View.OnClickListener() {
@@ -1859,7 +1845,6 @@ public class MainActivity extends BaseActivity {
             });
         }
     }
-    
     //初始化头部view
     private void initHeadView() {
         mHeadLogo = (ImageView) findViewById(R.id.main_head_logo);
@@ -1868,7 +1853,6 @@ public class MainActivity extends BaseActivity {
         mHead_search = (ImageButton) findViewById(R.id.main_head_search);
         mHeadPub_post = (ImageButton) findViewById(R.id.main_head_pub_post);
         mHeadPub_tweet = (ImageButton) findViewById(R.id.main_head_pub_tweet);
-        
         mHead_search.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 UIHelper.showSearch(v.getContext());
@@ -1884,11 +1868,7 @@ public class MainActivity extends BaseActivity {
                 UIHelper.showTweetPub(MainActivity.this);
             }
         });
-        
-        
     }
-    
-    
     /**
      * 快捷栏item点击事件
      */
@@ -1930,24 +1910,15 @@ public class MainActivity extends BaseActivity {
                         UIHelper.sendBroadCast(context, res.getNotice());
                     }
                     // 发完动弹后-刷新最新动弹、我的动弹&最新动态(当前界面必须是动弹|动态)
-                    
-                    
                     if (curTweetCatalog >= 0 && mCurSel == 2) {
                         loadLvTweetData(curTweetCatalog, 0, lvTweetHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
                     } else if (curActiveCatalog == ActiveList.CATALOG_LASTEST && mCurSel == 3) {
-                        
                         loadLvActiveData(curActiveCatalog, 0, lvActiveHandler, UIHelper.LISTVIEW_ACTION_REFRESH);
                     }
-                    
-                    
                 }
-                
-                
             }
-            
         }
     }
-    
     
     /**
      * 线程加载动态数据
@@ -1987,7 +1958,7 @@ public class MainActivity extends BaseActivity {
     /**
      * 线程加载动弹数据
      *
-     * @param catalog   -1 热门，0 最新，大于0 某用户的动弹(uid)
+     * @param catalog   -1 热门，0  最新，大于0 某用户的动弹(uid)
      * @param pageIndex 当前页数
      * @param handler   处理器
      * @param action    动作标识

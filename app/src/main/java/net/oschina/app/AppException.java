@@ -1,16 +1,10 @@
 package net.oschina.app;
-
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Environment;
 import android.widget.Toast;
-
 import net.oschina.app.application.AppContext;
-
 import org.apache.commons.httpclient.HttpException;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,7 +13,6 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Date;
-
 /**
  * desc:应用程序异常类，用于捕获程序异常和提示错误信息
  * Created by zlx on 2017/7/13.
@@ -30,8 +23,6 @@ public class AppException extends Exception implements Thread.UncaughtExceptionH
     private Thread.UncaughtExceptionHandler mDefaultHandler;
     private byte type;
     private int code;
-
-
     //定义异常类型
     public final static byte TYPE_NETWORK = 0x01;
     public final static byte TYPE_SOCKET = 0x02;
@@ -41,14 +32,14 @@ public class AppException extends Exception implements Thread.UncaughtExceptionH
     public final static byte TYPE_IO = 0x06;
     public final static byte TYPE_RUN = 0x07;
     public final static byte TYPE_JSON = 0x08;
-
-
     public void setType(byte type) {
         this.type = type;
+        
     }
 
     public void setCode(int code) {
         this.code = code;
+        
     }
 
     public byte getType() {
@@ -71,7 +62,6 @@ public class AppException extends Exception implements Thread.UncaughtExceptionH
             this.saveErrorLog(excp);
         }
     }
-
     //提示友好的错误信息
     public void makeToast(Context context) {
         switch (this.getType()) {
@@ -102,7 +92,6 @@ public class AppException extends Exception implements Thread.UncaughtExceptionH
                 break;
         }
     }
-
     //保存异常日志
     private void saveErrorLog(Exception excp) {
         String errorlog = "errorlog.txt";
